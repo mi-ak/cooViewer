@@ -1,38 +1,42 @@
-# cooViewer1.2b
-https://coo-ona.github.io/cooViewer/
+# cooViewer 1.2b
 
-## 現行Mac / Apple Silicon (M2以降) でのビルド
+macOS 向けの画像・コミックアーカイブビューアです。操作方法は [マニュアル](docs/manual.html) を参照してください。
 
-アーカイブ読み込みはmacOS標準の `libarchive` を使用するため、追加のアーカイブフレームワークは不要です。
+## ビルド
+
+Apple Silicon 搭載の macOS 15 以降を対象に、フル版 Xcode の `xcodebuild` で arm64 版をビルドします。アーカイブ読み込みには macOS の `libarchive` を使用します。追加のアーカイブフレームワークは不要です。
 
 ```sh
-git clone https://github.com/coo-ona/cooViewer.git
-cd cooViewer
-xcodebuild -project cooViewer.xcodeproj -scheme cooViewer -configuration Deployment -arch arm64
+xcodebuild -project cooViewer.xcodeproj -scheme cooViewer \
+  -configuration Development -destination 'generic/platform=macOS' \
+  -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build
 ```
 
-Intel Macでも動かすUniversal 2バイナリを作る場合は、`-arch arm64 -arch x86_64` と指定します。
+アプリは `build/Products/Development/cooViewer.app` に出力されます。配布向けには `-configuration Deployment` を指定してください。
 
-フル版のXcode（Command Line Toolsのみでは不可）が必要です。
+## テスト
 
-## 開発環境
-MacBook Pro (2.3GHz/16GB)<br>
-MacOS X 10.14.5
+```sh
+sh test/run_tests.sh
+```
 
-## 操作方法
-https://coo-ona.github.io/cooViewer/manual.html
+このテストはアーカイブの読み込み、階層付きファイルの展開、不正な展開先の拒否、破損したアーカイブによる既存ファイルの上書き防止を確認します。
+
+## ディレクトリ
+
+- `src/`: アプリの Objective-C ソース。機能別のサブディレクトリに分割。
+- `test/`: テストコードと実行スクリプト。
+- `resource/`: Xcode がアプリに組み込む画像、アイコン、メニュー、翻訳、およびローカライズ作業ファイル。
+- `docs/`: 操作マニュアル、開発資料、ライセンス。
+- `tools/`: ローカライズ補助ツール。
+
+依存関係とファイル追加時の注意点は [開発資料](docs/DEVELOPMENT.md) を参照してください。
 
 ## アンインストール
-・アプリ本体<br>
-・/Users/(ユーザー名)/ライブラリ/Preferences/jp.coo.cooViewer.plist<br>
-を消してください
 
-## 著作権、免責等
-cooViewerはMITライセンスです。
-ライセンスについては添付のLicence.txtを参照してください。
+アプリ本体と `~/Library/Preferences/jp.coo.cooViewer.plist` を削除してください。
 
-このソフトウェアはRemote Control Wrapper ( http://www.martinkahr.com/source-code/ ) を使用しています。<br>
-ライセンスについては添付のLicence_RemoteControlWrapper.txtを参照してください。
+## ライセンス
 
-64bit化対応にあたり、スレの皆様をはじめ、多くの方にご協力いただきました。ありがとうございます。
-また、nibをxibに変換いただいたkanjitalk755さんには特に感謝申し上げます。
+cooViewer は MIT ライセンスです。[本体のライセンス](docs/licenses/Licence.txt) と [Remote Control Wrapper のライセンス](docs/licenses/Licence_RemoteControlWrapper.txt) を参照してください。
+両ライセンス文書は生成されるアプリにも同梱されます。

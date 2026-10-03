@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array><string>7z</string><string>7Z</string></array>
+			<key>CFBundleTypeName</key><string>7-Zip Archive</string>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array><string>lha</string><string>lzh</string><string>LHA</string><string>LZH</string></array>
+			<key>CFBundleTypeName</key><string>LhA Archive</string>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array><string>zip</string><string>ZIP</string><string>jar</string><string>JAR</string><string>cbz</string><string>CBZ</string></array>
+			<key>CFBundleTypeName</key><string>ZIP Archive</string>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array><string>rar</string><string>RAR</string><string>cbr</string><string>CBR</string></array>
+			<key>CFBundleTypeName</key><string>RAR Archive</string>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array><string>tar</string><string>TAR</string><string>gtar</string></array>
+			<key>CFBundleTypeName</key><string>Tar Archive</string>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array><string>tgz</string><string>tar-gz</string><string>TGZ</string><string>gz</string><string>gzip</string><string>GZ</string></array>
+			<key>CFBundleTypeName</key><string>Gzip Archive</string>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array><string>tbz</string><string>tbz2</string><string>TBZ</string><string>bz</string><string>bz2</string><string>bzip2</string><string>BZ</string><string>BZ2</string></array>
+			<key>CFBundleTypeName</key><string>Bzip2 Archive</string>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array><string>txz</string><string>TXZ</string><string>xz</string><string>XZ</string></array>
+			<key>CFBundleTypeName</key><string>XZ Archive</string>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array><string>taz</string><string>tar-z</string><string>z</string><string>Z</string><string>lzma</string></array>
+			<key>CFBundleTypeName</key><string>Compressed Archive</string>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array><string>cab</string><string>CAB</string></array>
+			<key>CFBundleTypeName</key><string>CAB Archive</string>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array><string>cpio</string><string>cpgz</string><string>pax</string><string>PAX</string><string>xar</string><string>XAR</string><string>ar</string><string>AR</string></array>
+			<key>CFBundleTypeName</key><string>Unix Archive</string>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array><string>bmp</string><string>tiff</string><string>tif</string><string>png</string><string>gif</string><string>jpg</string><string>jpeg</string><string>avif</string><string>webp</string><string>WEBP</string></array>
+			<key>CFBundleTypeName</key><string>Image</string>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key><array><string>pdf</string></array>
+			<key>CFBundleTypeName</key><string>PDF Document</string>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key><array><string>cvbdl</string></array>
+			<key>CFBundleTypeName</key><string>ComicViewer Comic</string>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key><array><string>savedSearch</string></array>
+			<key>CFBundleTypeName</key><string>SavedSearch</string>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key><string>directory</string>
+			<key>CFBundleTypeOSTypes</key><array><string>fold</string></array>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+			<key>LSItemContentTypes</key><array><string>public.directory</string></array>
+		</dict>
+	</array>
+	<key>CFBundleExecutable</key><string>cooViewer</string>
+	<key>CFBundleIconName</key><string>AppIcon</string>
+	<key>CFBundleIdentifier</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+	<key>CFBundlePackageType</key><string>APPL</string>
+	<key>CFBundleSignature</key><string>COvw</string>
+	<key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>NSMainNibFile</key><string>MainMenu</string>
+	<key>NSPrincipalClass</key><string>NSApplication</string>
+</dict>
+</plist>
