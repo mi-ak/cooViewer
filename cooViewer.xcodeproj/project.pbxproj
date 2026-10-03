@@ -8,8 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		372911581316C60C0040B910 /* empty.png in Resources */ = {isa = PBXBuildFile; fileRef = 372911571316C60C0040B910 /* empty.png */; };
-		373D3539130F075E0037F8DD /* GlobalKeyboardDevice.h in Headers */ = {isa = PBXBuildFile; fileRef = 373D3537130F075E0037F8DD /* GlobalKeyboardDevice.h */; };
-		373D353A130F075E0037F8DD /* GlobalKeyboardDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = 373D3538130F075E0037F8DD /* GlobalKeyboardDevice.m */; };
 		3740B9351311708D0084326B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 3740B9341311708D0084326B /* Localizable.strings */; };
 		37AD8316131AA9E600F0123C /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37AD8315131AA9E600F0123C /* Quartz.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		C0A4E1012A00000100000001 /* COArchiveReader.m in Sources */ = {isa = PBXBuildFile; fileRef = C0A4E2012A00000100000001 /* COArchiveReader.m */; };
@@ -29,15 +27,15 @@
 		C0A4E1022A00000100000001 /* COArchiveReader.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A4E2022A00000100000001 /* COArchiveReader.h */; };
 		C0A4E1032A00000100000001 /* AppIcon.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C0A4E2032A00000100000001 /* AppIcon.xcassets */; };
 		C0A4E1042A00000100000001 /* Licence.txt in Resources */ = {isa = PBXBuildFile; fileRef = C0A4E2042A00000100000001 /* Licence.txt */; };
-		C0A4E1052A00000100000001 /* Licence_RemoteControlWrapper.txt in Resources */ = {isa = PBXBuildFile; fileRef = C0A4E2052A00000100000001 /* Licence_RemoteControlWrapper.txt */; };
+		C0A4E1052A00000100000001 /* COFileBookmarks.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A4E2052A00000100000001 /* COFileBookmarks.h */; };
+		C0A4E1062A00000100000001 /* COArchivedSettings.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A4E2062A00000100000001 /* COArchivedSettings.h */; };
+		C0A4E1072A00000100000001 /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0A4E2072A00000100000001 /* UniformTypeIdentifiers.framework */; };
 		76344C0A09595C74003761DA /* COImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 76344C0809595C74003761DA /* COImageLoader.h */; };
 		76344C0B09595C74003761DA /* COImageLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = 76344C0909595C74003761DA /* COImageLoader.m */; };
 		763759390C3913050047DF92 /* ThumbnailMatrix.h in Headers */ = {isa = PBXBuildFile; fileRef = 763759370C3913050047DF92 /* ThumbnailMatrix.h */; };
 		7637593A0C3913050047DF92 /* ThumbnailMatrix.m in Sources */ = {isa = PBXBuildFile; fileRef = 763759380C3913050047DF92 /* ThumbnailMatrix.m */; };
 		763EFA1C0D3B27FB0014522D /* ThumbnailController.m in Sources */ = {isa = PBXBuildFile; fileRef = 763EFA1B0D3B27FB0014522D /* ThumbnailController.m */; };
 		7644B3240D6EE315007C8AFD /* System.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7644B3230D6EE315007C8AFD /* System.framework */; };
-		7644B3260D6EE322007C8AFD /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7644B3250D6EE322007C8AFD /* IOKit.framework */; };
-		7644B3370D6EE434007C8AFD /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7644B3360D6EE433007C8AFD /* Carbon.framework */; };
 		7655CDCF09806A8F00465FD1 /* COPDFImageRep.h in Headers */ = {isa = PBXBuildFile; fileRef = 7655CDCD09806A8F00465FD1 /* COPDFImageRep.h */; };
 		7655CDD009806A8F00465FD1 /* COPDFImageRep.m in Sources */ = {isa = PBXBuildFile; fileRef = 7655CDCE09806A8F00465FD1 /* COPDFImageRep.m */; };
 		766DE03809936CF5004DD915 /* COColorPopUpButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 766DE03609936CF4004DD915 /* COColorPopUpButton.h */; };
@@ -72,17 +70,7 @@
 		76CB9075097B9E110009A972 /* Controller_input.m in Sources */ = {isa = PBXBuildFile; fileRef = 76CB9073097B9E100009A972 /* Controller_input.m */; };
 		76D3F8D1082F6A5100B9E97E /* ThumbnailPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 76D3F8CF082F6A5100B9E97E /* ThumbnailPanel.m */; };
 		76D3F8D2082F6A5100B9E97E /* ThumbnailPanel.h in Headers */ = {isa = PBXBuildFile; fileRef = 76D3F8D0082F6A5100B9E97E /* ThumbnailPanel.h */; };
-		76D5AA440D69E41C0057EF7A /* RemoteControl.h in Headers */ = {isa = PBXBuildFile; fileRef = 76D5AA400D69E41C0057EF7A /* RemoteControl.h */; };
-		76D5AA450D69E41C0057EF7A /* RemoteControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 76D5AA410D69E41C0057EF7A /* RemoteControl.m */; };
-		76D5AA460D69E41C0057EF7A /* HIDRemoteControlDevice.h in Headers */ = {isa = PBXBuildFile; fileRef = 76D5AA420D69E41C0057EF7A /* HIDRemoteControlDevice.h */; };
-		76D5AA470D69E41C0057EF7A /* HIDRemoteControlDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = 76D5AA430D69E41C0057EF7A /* HIDRemoteControlDevice.m */; };
-		76D5AA510D69E42D0057EF7A /* AppleRemote.h in Headers */ = {isa = PBXBuildFile; fileRef = 76D5AA490D69E42D0057EF7A /* AppleRemote.h */; };
-		76D5AA520D69E42D0057EF7A /* AppleRemote.m in Sources */ = {isa = PBXBuildFile; fileRef = 76D5AA4A0D69E42D0057EF7A /* AppleRemote.m */; };
-		76D5AA530D69E42D0057EF7A /* KeyspanFrontRowControl.h in Headers */ = {isa = PBXBuildFile; fileRef = 76D5AA4B0D69E42D0057EF7A /* KeyspanFrontRowControl.h */; };
-		76D5AA540D69E42D0057EF7A /* KeyspanFrontRowControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 76D5AA4C0D69E42D0057EF7A /* KeyspanFrontRowControl.m */; };
 		76D80A360C36499800A5E84C /* up.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 76D80A340C36499800A5E84C /* up.tiff */; };
-		76E56F520D74647100128802 /* MultiClickRemoteBehavior.h in Headers */ = {isa = PBXBuildFile; fileRef = 76D5AA3D0D69E3FC0057EF7A /* MultiClickRemoteBehavior.h */; };
-		76E56F530D74647400128802 /* MultiClickRemoteBehavior.m in Sources */ = {isa = PBXBuildFile; fileRef = 76D5AA3E0D69E3FC0057EF7A /* MultiClickRemoteBehavior.m */; };
 		76EA136607E3FC39008EB0E1 /* BookmarkPanel.h in Headers */ = {isa = PBXBuildFile; fileRef = 76EA136407E3FC39008EB0E1 /* BookmarkPanel.h */; };
 		76EA136707E3FC39008EB0E1 /* BookmarkPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 76EA136507E3FC39008EB0E1 /* BookmarkPanel.m */; };
 		76EF3E3507FC11CB008D6B37 /* FullImageView.h in Headers */ = {isa = PBXBuildFile; fileRef = 76EF3E3307FC11CB008D6B37 /* FullImageView.h */; };
@@ -112,14 +100,14 @@
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* cooViewer_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cooViewer_Prefix.pch; sourceTree = "<group>"; };
 		372911571316C60C0040B910 /* empty.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = empty.png; sourceTree = "<group>"; };
-		373D3537130F075E0037F8DD /* GlobalKeyboardDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GlobalKeyboardDevice.h; sourceTree = "<group>"; };
-		373D3538130F075E0037F8DD /* GlobalKeyboardDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GlobalKeyboardDevice.m; sourceTree = "<group>"; };
 		37AD8315131AA9E600F0123C /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = /System/Library/Frameworks/Quartz.framework; sourceTree = "<absolute>"; };
 		C0A4E2012A00000100000001 /* COArchiveReader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = COArchiveReader.m; sourceTree = "<group>"; };
 		C0A4E2022A00000100000001 /* COArchiveReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = COArchiveReader.h; sourceTree = "<group>"; };
 		C0A4E2032A00000100000001 /* AppIcon.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = AppIcon.xcassets; sourceTree = "<group>"; };
 		C0A4E2042A00000100000001 /* Licence.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = docs/licenses/Licence.txt; sourceTree = SOURCE_ROOT; };
-		C0A4E2052A00000100000001 /* Licence_RemoteControlWrapper.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = docs/licenses/Licence_RemoteControlWrapper.txt; sourceTree = SOURCE_ROOT; };
+		C0A4E2052A00000100000001 /* COFileBookmarks.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = COFileBookmarks.h; sourceTree = "<group>"; };
+		C0A4E2062A00000100000001 /* COArchivedSettings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = COArchivedSettings.h; sourceTree = "<group>"; };
+		C0A4E2072A00000100000001 /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = /System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = "<absolute>"; };
 		7601F5F607D5508700457A5B /* CustomImageView.h */ = {isa = PBXFileReference; fileEncoding = 0; lastKnownFileType = sourcecode.c.h; path = CustomImageView.h; sourceTree = "<group>"; };
 		7601F5F707D5508700457A5B /* CustomImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CustomImageView.m; sourceTree = "<group>"; };
 		76181B7D08BE17BC000A527E /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
@@ -138,8 +126,6 @@
 		763759380C3913050047DF92 /* ThumbnailMatrix.m */ = {isa = PBXFileReference; fileEncoding = 0; lastKnownFileType = sourcecode.c.objc; path = ThumbnailMatrix.m; sourceTree = "<group>"; };
 		763EFA1B0D3B27FB0014522D /* ThumbnailController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ThumbnailController.m; sourceTree = "<group>"; };
 		7644B3230D6EE315007C8AFD /* System.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = System.framework; path = /System/Library/Frameworks/System.framework; sourceTree = "<absolute>"; };
-		7644B3250D6EE322007C8AFD /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = /System/Library/Frameworks/IOKit.framework; sourceTree = "<absolute>"; };
-		7644B3360D6EE433007C8AFD /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		7655CDCD09806A8F00465FD1 /* COPDFImageRep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = COPDFImageRep.h; sourceTree = "<group>"; };
 		7655CDCE09806A8F00465FD1 /* COPDFImageRep.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = COPDFImageRep.m; sourceTree = "<group>"; };
 		766DE03609936CF4004DD915 /* COColorPopUpButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = COColorPopUpButton.h; sourceTree = "<group>"; };
@@ -174,16 +160,6 @@
 		76CB9073097B9E100009A972 /* Controller_input.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Controller_input.m; sourceTree = "<group>"; };
 		76D3F8CF082F6A5100B9E97E /* ThumbnailPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ThumbnailPanel.m; sourceTree = "<group>"; };
 		76D3F8D0082F6A5100B9E97E /* ThumbnailPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThumbnailPanel.h; sourceTree = "<group>"; };
-		76D5AA3D0D69E3FC0057EF7A /* MultiClickRemoteBehavior.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MultiClickRemoteBehavior.h; sourceTree = "<group>"; };
-		76D5AA3E0D69E3FC0057EF7A /* MultiClickRemoteBehavior.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MultiClickRemoteBehavior.m; sourceTree = "<group>"; };
-		76D5AA400D69E41C0057EF7A /* RemoteControl.h */ = {isa = PBXFileReference; fileEncoding = 0; lastKnownFileType = sourcecode.c.h; path = RemoteControl.h; sourceTree = "<group>"; };
-		76D5AA410D69E41C0057EF7A /* RemoteControl.m */ = {isa = PBXFileReference; fileEncoding = 0; lastKnownFileType = sourcecode.c.objc; path = RemoteControl.m; sourceTree = "<group>"; };
-		76D5AA420D69E41C0057EF7A /* HIDRemoteControlDevice.h */ = {isa = PBXFileReference; fileEncoding = 0; lastKnownFileType = sourcecode.c.h; path = HIDRemoteControlDevice.h; sourceTree = "<group>"; };
-		76D5AA430D69E41C0057EF7A /* HIDRemoteControlDevice.m */ = {isa = PBXFileReference; fileEncoding = 0; lastKnownFileType = sourcecode.c.objc; path = HIDRemoteControlDevice.m; sourceTree = "<group>"; };
-		76D5AA490D69E42D0057EF7A /* AppleRemote.h */ = {isa = PBXFileReference; fileEncoding = 0; lastKnownFileType = sourcecode.c.h; path = AppleRemote.h; sourceTree = "<group>"; };
-		76D5AA4A0D69E42D0057EF7A /* AppleRemote.m */ = {isa = PBXFileReference; fileEncoding = 0; lastKnownFileType = sourcecode.c.objc; path = AppleRemote.m; sourceTree = "<group>"; };
-		76D5AA4B0D69E42D0057EF7A /* KeyspanFrontRowControl.h */ = {isa = PBXFileReference; fileEncoding = 0; lastKnownFileType = sourcecode.c.h; path = KeyspanFrontRowControl.h; sourceTree = "<group>"; };
-		76D5AA4C0D69E42D0057EF7A /* KeyspanFrontRowControl.m */ = {isa = PBXFileReference; fileEncoding = 0; lastKnownFileType = sourcecode.c.objc; path = KeyspanFrontRowControl.m; sourceTree = "<group>"; };
 		76D80A340C36499800A5E84C /* up.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = up.tiff; sourceTree = "<group>"; };
 		76EA136407E3FC39008EB0E1 /* BookmarkPanel.h */ = {isa = PBXFileReference; fileEncoding = 0; lastKnownFileType = sourcecode.c.h; path = BookmarkPanel.h; sourceTree = "<group>"; };
 		76EA136507E3FC39008EB0E1 /* BookmarkPanel.m */ = {isa = PBXFileReference; fileEncoding = 0; lastKnownFileType = sourcecode.c.objc; path = BookmarkPanel.m; sourceTree = "<group>"; };
@@ -216,9 +192,8 @@
 			files = (
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				7644B3240D6EE315007C8AFD /* System.framework in Frameworks */,
-				7644B3260D6EE322007C8AFD /* IOKit.framework in Frameworks */,
-				7644B3370D6EE434007C8AFD /* Carbon.framework in Frameworks */,
 				37AD8316131AA9E600F0123C /* Quartz.framework in Frameworks */,
+				C0A4E1072A00000100000001 /* UniformTypeIdentifiers.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -234,7 +209,6 @@
 				7686266B09514777006BFAAC /* bookmark */,
 				7686266709514730006BFAAC /* thumbnail */,
 				76344BB5095958E1003761DA /* item */,
-				76D5AA3B0D69E3D30057EF7A /* Remote Controll Wrapper */,
 				76EF34C70D4CE64900211B2E /* Category */,
 			);
 			name = "Source";
@@ -297,7 +271,6 @@
 				8D1107310486CEB800E47090 /* Info.plist */,
 				C0A4E2032A00000100000001 /* AppIcon.xcassets */,
 				C0A4E2042A00000100000001 /* Licence.txt */,
-				C0A4E2052A00000100000001 /* Licence_RemoteControlWrapper.txt */,
 				3740B9341311708D0084326B /* Localizable.strings */,
 				76EF34BA0D4CE5FD00211B2E /* image */,
 			);
@@ -309,8 +282,7 @@
 			isa = PBXGroup;
 			children = (
 				37AD8315131AA9E600F0123C /* Quartz.framework */,
-				7644B3360D6EE433007C8AFD /* Carbon.framework */,
-				7644B3250D6EE322007C8AFD /* IOKit.framework */,
+				C0A4E2072A00000100000001 /* UniformTypeIdentifiers.framework */,
 				7644B3230D6EE315007C8AFD /* System.framework */,
 				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
 				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
@@ -362,6 +334,7 @@
 			isa = PBXGroup;
 			children = (
 				76C6BEA508C2927300377076 /* PreferenceController.h */,
+				C0A4E2062A00000100000001 /* COArchivedSettings.h */,
 				76C6BEA608C2927300377076 /* PreferenceController.m */,
 				766DE03609936CF4004DD915 /* COColorPopUpButton.h */,
 				766DE03709936CF4004DD915 /* COColorPopUpButton.m */,
@@ -421,6 +394,7 @@
 			isa = PBXGroup;
 			children = (
 				76B19AC107C9C15A00A6FB97 /* Controller.h */,
+				C0A4E2052A00000100000001 /* COFileBookmarks.h */,
 				76B19AC207C9C15A00A6FB97 /* Controller.m */,
 				76CB9073097B9E100009A972 /* Controller_input.m */,
 			);
@@ -446,53 +420,6 @@
 			);
 			name = "Window";
 			path = window;
-			sourceTree = "<group>";
-		};
-		76D5AA3B0D69E3D30057EF7A /* Remote Controll Wrapper */ = {
-			isa = PBXGroup;
-			children = (
-				76D5AA3C0D69E3FC0057EF7A /* Behaviors */,
-				76D5AA3F0D69E41C0057EF7A /* Base Classes */,
-				76D5AA480D69E42D0057EF7A /* Devices */,
-			);
-			name = "Remote Control";
-			path = remote;
-			sourceTree = "<group>";
-		};
-		76D5AA3C0D69E3FC0057EF7A /* Behaviors */ = {
-			isa = PBXGroup;
-			children = (
-				76D5AA3D0D69E3FC0057EF7A /* MultiClickRemoteBehavior.h */,
-				76D5AA3E0D69E3FC0057EF7A /* MultiClickRemoteBehavior.m */,
-			);
-			name = "Behaviors";
-			path = behaviors;
-			sourceTree = "<group>";
-		};
-		76D5AA3F0D69E41C0057EF7A /* Base Classes */ = {
-			isa = PBXGroup;
-			children = (
-				76D5AA400D69E41C0057EF7A /* RemoteControl.h */,
-				76D5AA410D69E41C0057EF7A /* RemoteControl.m */,
-				76D5AA420D69E41C0057EF7A /* HIDRemoteControlDevice.h */,
-				76D5AA430D69E41C0057EF7A /* HIDRemoteControlDevice.m */,
-			);
-			name = "Base";
-			path = base;
-			sourceTree = "<group>";
-		};
-		76D5AA480D69E42D0057EF7A /* Devices */ = {
-			isa = PBXGroup;
-			children = (
-				373D3537130F075E0037F8DD /* GlobalKeyboardDevice.h */,
-				373D3538130F075E0037F8DD /* GlobalKeyboardDevice.m */,
-				76D5AA490D69E42D0057EF7A /* AppleRemote.h */,
-				76D5AA4A0D69E42D0057EF7A /* AppleRemote.m */,
-				76D5AA4B0D69E42D0057EF7A /* KeyspanFrontRowControl.h */,
-				76D5AA4C0D69E42D0057EF7A /* KeyspanFrontRowControl.m */,
-			);
-			name = "Devices";
-			path = devices;
 			sourceTree = "<group>";
 		};
 		76EF34BA0D4CE5FD00211B2E /* image */ = {
@@ -554,6 +481,8 @@
 				76F0929A07DBF79E00643E4F /* BookmarkController.h in Headers */,
 				76EA136607E3FC39008EB0E1 /* BookmarkPanel.h in Headers */,
 				76B19AC307C9C15A00A6FB97 /* Controller.h in Headers */,
+				C0A4E1052A00000100000001 /* COFileBookmarks.h in Headers */,
+				C0A4E1062A00000100000001 /* COArchivedSettings.h in Headers */,
 				7601F5F807D5508700457A5B /* CustomImageView.h in Headers */,
 				768E1DEC07CC6B740023AF61 /* CustomWindow.h in Headers */,
 				76EF3E3507FC11CB008D6B37 /* FullImageView.h in Headers */,
@@ -579,12 +508,6 @@
 				761B46A40D61E97900667B2A /* AccessoryWindow.h in Headers */,
 				769762A70D657268009CFDBE /* AccessorySettingView.h in Headers */,
 				76F2B6440D67329C003269BB /* COTextView.h in Headers */,
-				76D5AA440D69E41C0057EF7A /* RemoteControl.h in Headers */,
-				76D5AA460D69E41C0057EF7A /* HIDRemoteControlDevice.h in Headers */,
-				76D5AA510D69E42D0057EF7A /* AppleRemote.h in Headers */,
-				76D5AA530D69E42D0057EF7A /* KeyspanFrontRowControl.h in Headers */,
-				76E56F520D74647100128802 /* MultiClickRemoteBehavior.h in Headers */,
-				373D3539130F075E0037F8DD /* GlobalKeyboardDevice.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -644,7 +567,6 @@
 				7621F56808C5719B006A9301 /* InfoPlist.strings in Resources */,
 				C0A4E1032A00000100000001 /* AppIcon.xcassets in Resources */,
 				C0A4E1042A00000100000001 /* Licence.txt in Resources */,
-				C0A4E1052A00000100000001 /* Licence_RemoteControlWrapper.txt in Resources */,
 				76F33A17083727A90099A43D /* broken.png in Resources */,
 				768C80130838765500E6C5C8 /* left.tiff in Resources */,
 				768C802F0838777900E6C5C8 /* right.tiff in Resources */,
@@ -701,12 +623,6 @@
 				A31C5A9A23CA3D6300DD4E70 /* FilterPanelController.m in Sources */,
 				769762A80D657268009CFDBE /* AccessorySettingView.m in Sources */,
 				76F2B6450D67329C003269BB /* COTextView.m in Sources */,
-				76D5AA450D69E41C0057EF7A /* RemoteControl.m in Sources */,
-				76D5AA470D69E41C0057EF7A /* HIDRemoteControlDevice.m in Sources */,
-				76D5AA520D69E42D0057EF7A /* AppleRemote.m in Sources */,
-				76D5AA540D69E42D0057EF7A /* KeyspanFrontRowControl.m in Sources */,
-				76E56F530D74647400128802 /* MultiClickRemoteBehavior.m in Sources */,
-				373D353A130F075E0037F8DD /* GlobalKeyboardDevice.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

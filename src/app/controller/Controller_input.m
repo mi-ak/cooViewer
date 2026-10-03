@@ -1,106 +1,21 @@
 #import "Controller.h"
-#import "RemoteControl.h"
 #import "NSString_Compare.h"
 #import "CustomWindow.h"
 #import "BookmarkController.h"
 #import "CustomImageView.h"
 #import "FullImagePanel.h"
+#import "COImageLoader.h"
+#import "ThumbnailController.h"
 @implementation Controller (Input)
 
-static BOOL appleRemoteHoldDown = NO;
-
 #pragma mark action
-- (void)remoteButton:(RemoteControlEventIdentifier)buttonIdentifier pressedDown: (BOOL) pressedDown clickCount: (unsigned int)clickCount
-{
-	appleRemoteHoldDown = NO;
-	if (!pressedDown) {
-		return;
-	}
-	UpdateSystemActivity( OverallAct );
-	//UpdateSystemActivity(UsrActivity);
-	
-    unichar character = buttonIdentifier;
-	switch(buttonIdentifier) {
-		case kRemoteButtonRight_Hold:
-			appleRemoteHoldDown = YES;
-			character = kRemoteButtonRight;
-			break;	
-		case kRemoteButtonLeft_Hold:
-			appleRemoteHoldDown = YES;
-			character = kRemoteButtonLeft;
-			break;			
-		case kRemoteButtonPlus_Hold:
-			appleRemoteHoldDown = YES;
-			character = kRemoteButtonPlus;
-			break;				
-		case kRemoteButtonMinus_Hold:
-			appleRemoteHoldDown = YES;
-			character = kRemoteButtonMinus;
-			break;				
-		case kRemoteButtonPlay_Hold:
-			appleRemoteHoldDown = YES;
-			character = kRemoteButtonPlay;
-			break;			
-		case kRemoteButtonMenu_Hold:
-			appleRemoteHoldDown = YES;
-			character = kRemoteButtonMenu;
-			break;
-		default:
-			break;
-	}
-	NSString *characters = [NSString stringWithCharacters:&character length:1];
-	
-	if (![window isVisible] || ![window isKeyWindow]) {
-		if ([prefController inKeyEdit]) {
-			[prefController setKeyCharacters:characters];
-			appleRemoteHoldDown = NO;
-			return;
-		}
-		if (![thumController isVisible]) {
-			appleRemoteHoldDown = NO;
-			return;
-		}
-	}
-	[self timeredRemoteButtonEvent:characters];
-}
-- (void)timeredRemoteButtonEvent:(NSString*)characters;
-{	
-	if ([thumController isVisible]) {
-		[thumController appleRemoteAction:characters];
-	} else {
-		BOOL slideshow = NO;
-		if (timerSwitch) {
-			[timer invalidate];
-			timerSwitch = NO;
-			slideshow = YES;
-			[imageView setSlideshow:NO];
-		}
-		useComposedImage = NO;
-		threadStop = NO;
-		unichar character = [characters characterAtIndex:0];
-		unsigned int cMod = 100;
-		if (fitScreenMode == 0) {
-			[self getKeyAction:character mod:cMod mode:0 slideshow:slideshow];
-		} else if (fitScreenMode == 1) {
-			if (![self getKeyAction:character mod:cMod mode:1 slideshow:slideshow]) {
-				[self getKeyAction:character mod:cMod mode:0 slideshow:slideshow];
-			}
-		} else if (fitScreenMode == 2 || fitScreenMode == 3) {
-			if (![self getKeyAction:character mod:cMod mode:2 slideshow:slideshow]) {
-				[self getKeyAction:character mod:cMod mode:0 slideshow:slideshow];
-			}
-		}
-	}
-	if (!appleRemoteHoldDown) return;
-	[self performSelector:@selector(timeredRemoteButtonEvent:) withObject:characters afterDelay:0.1];
-}
-
 - (void)keyAction:(NSEvent*)sender
 {	
 	BOOL slideshow = NO;
 	if (timerSwitch) {
 		[timer invalidate];
-		timerSwitch = NO;
+		timerSwitch=NO;
+		[self endSlideshowActivity];
 		slideshow = YES;
 		[imageView setSlideshow:NO];
 		//return;
@@ -143,10 +58,10 @@ static BOOL appleRemoteHoldDown = NO;
 	} 
 	
 	unsigned int cMod = 0;
-	BOOL shift = ([sender modifierFlags] & NSShiftKeyMask) ? YES : NO;
-	BOOL option = ([sender modifierFlags] & NSAlternateKeyMask) ? YES : NO;
-	BOOL control = ([sender modifierFlags] & NSControlKeyMask) ? YES : NO;
-	BOOL numeric = ([sender modifierFlags] & NSNumericPadKeyMask) ? YES : NO;
+	BOOL shift = ([sender modifierFlags] & NSEventModifierFlagShift) ? YES : NO;
+	BOOL option = ([sender modifierFlags] & NSEventModifierFlagOption) ? YES : NO;
+	BOOL control = ([sender modifierFlags] & NSEventModifierFlagControl) ? YES : NO;
+	BOOL numeric = ([sender modifierFlags] & NSEventModifierFlagNumericPad) ? YES : NO;
 	
 	if (shift) cMod += 1;
 	if (option) cMod += 2;
@@ -806,14 +721,15 @@ static BOOL appleRemoteHoldDown = NO;
 	if (timerSwitch) {
 		[timer invalidate];
 		timerSwitch=NO;
+		[self endSlideshowActivity];
 		[imageView setSlideshow:NO];
 	}
 	
 	int button = (int)[sender buttonNumber];
 	unsigned int cMod = 0;
-	BOOL shift = ([sender modifierFlags] & NSShiftKeyMask) ? YES : NO;
-	BOOL option = ([sender modifierFlags] & NSAlternateKeyMask) ? YES : NO;
-	BOOL control = ([sender modifierFlags] & NSControlKeyMask) ? YES : NO;
+	BOOL shift = ([sender modifierFlags] & NSEventModifierFlagShift) ? YES : NO;
+	BOOL option = ([sender modifierFlags] & NSEventModifierFlagOption) ? YES : NO;
+	BOOL control = ([sender modifierFlags] & NSEventModifierFlagControl) ? YES : NO;
 	
 	if (shift) {
 		cMod += 1;
@@ -900,9 +816,9 @@ static BOOL appleRemoteHoldDown = NO;
 		default:
 			break;
 	}
-	BOOL shift = ([sender modifierFlags] & NSShiftKeyMask) ? YES : NO;
-	BOOL option = ([sender modifierFlags] & NSAlternateKeyMask) ? YES : NO;
-	BOOL control = ([sender modifierFlags] & NSControlKeyMask) ? YES : NO;
+	BOOL shift = ([sender modifierFlags] & NSEventModifierFlagShift) ? YES : NO;
+	BOOL option = ([sender modifierFlags] & NSEventModifierFlagOption) ? YES : NO;
+	BOOL control = ([sender modifierFlags] & NSEventModifierFlagControl) ? YES : NO;
 	
 	if (shift) {
 		cMod += 1;
@@ -973,9 +889,9 @@ static BOOL appleRemoteHoldDown = NO;
 		default:
 			break;
 	}
-	BOOL shift = ([sender modifierFlags] & NSShiftKeyMask) ? YES : NO;
-	BOOL option = ([sender modifierFlags] & NSAlternateKeyMask) ? YES : NO;
-	BOOL control = ([sender modifierFlags] & NSControlKeyMask) ? YES : NO;
+	BOOL shift = ([sender modifierFlags] & NSEventModifierFlagShift) ? YES : NO;
+	BOOL option = ([sender modifierFlags] & NSEventModifierFlagOption) ? YES : NO;
+	BOOL control = ([sender modifierFlags] & NSEventModifierFlagControl) ? YES : NO;
 	
 	if (shift) {
 		cMod += 1;
@@ -1795,6 +1711,7 @@ static BOOL appleRemoteHoldDown = NO;
 	if (timerSwitch) {
 		[timer invalidate];
 		timerSwitch=NO;
+		[self endSlideshowActivity];
 	}
 	[lock lock];
 	[lock unlock];
@@ -1855,6 +1772,7 @@ static BOOL appleRemoteHoldDown = NO;
 	if (timerSwitch) {
 		[timer invalidate];
 		timerSwitch=NO;
+		[self endSlideshowActivity];
 	}
 
 	threadStop = NO;
@@ -1971,11 +1889,12 @@ static BOOL appleRemoteHoldDown = NO;
 	if (timerSwitch) {
 		[timer invalidate];
 		timerSwitch=NO;
+		[self endSlideshowActivity];
 	}
 	id scrollView = [fullImageView enclosingScrollView];
 	
 	[fullImageView setImage:nil];
-	[fullImageView setImageScaling:NSScaleNone];
+	[fullImageView setImageScaling:NSImageScaleNone];
 	int i;
 	if (!secondImage) {
 		i = nowPage - 1;
@@ -1990,7 +1909,7 @@ static BOOL appleRemoteHoldDown = NO;
                                 horizontalScrollerClass:nil
                                   verticalScrollerClass:nil
                                              borderType:[scrollView borderType]
-                                            controlSize:NSRegularControlSize
+                                            controlSize:NSControlSizeRegular
                                           scrollerStyle:[scrollView scrollerStyle]
     ];
 	[fullImagePanel setContentSize:theScrollViewSize];
@@ -2024,10 +1943,11 @@ static BOOL appleRemoteHoldDown = NO;
 	if (timerSwitch) {
 		[timer invalidate];
 		timerSwitch=NO;
+		[self endSlideshowActivity];
 	}
 	id scrollView = [fullImageView enclosingScrollView];
 	[fullImageView setImage:nil];
-	[fullImageView setImageScaling:NSScaleNone];
+	[fullImageView setImageScaling:NSImageScaleNone];
 	int i;
 	if (!secondImage) {
 		i = nowPage - 1;
@@ -2041,7 +1961,7 @@ static BOOL appleRemoteHoldDown = NO;
                                 horizontalScrollerClass:nil
                                   verticalScrollerClass:nil
                                              borderType:[scrollView borderType]
-                                            controlSize:NSRegularControlSize
+                                            controlSize:NSControlSizeRegular
                                           scrollerStyle:[scrollView scrollerStyle]
     ];
 	[fullImagePanel setContentSize:theScrollViewSize];
@@ -2576,8 +2496,8 @@ static BOOL appleRemoteHoldDown = NO;
 		NSEnumerator *enumerator = [[[openSameFolderMenuItem submenu] itemArray] objectEnumerator];
 		id object;
 		while (object = [enumerator nextObject]) {
-			if ([object state] == NSOnState){
-				[object setState:NSOffState];
+			if ([object state] == NSControlStateValueOn){
+				[object setState:NSControlStateValueOff];
 				while (object = [enumerator nextObject]) {
 					if ([object isEnabled]) {
 						break;
@@ -2586,7 +2506,7 @@ static BOOL appleRemoteHoldDown = NO;
 				if (!object) {
 					object = [[[openSameFolderMenuItem submenu] itemArray] objectAtIndex:0];
 				}
-				[object setState:NSOnState];
+				[object setState:NSControlStateValueOn];
 				break;
 			}
 		}
@@ -2600,8 +2520,8 @@ static BOOL appleRemoteHoldDown = NO;
 		NSEnumerator *enumerator = [[[openSameFolderMenuItem submenu] itemArray] reverseObjectEnumerator];
 		id object;
 		while (object = [enumerator nextObject]) {
-			if ([object state] == NSOnState){
-				[object setState:NSOffState];
+			if ([object state] == NSControlStateValueOn){
+				[object setState:NSControlStateValueOff];
 				while (object = [enumerator nextObject]) {
 					if ([object isEnabled]) {
 						break;
@@ -2610,7 +2530,7 @@ static BOOL appleRemoteHoldDown = NO;
 				if (!object) {
 					object = [[[openSameFolderMenuItem submenu] itemArray] lastObject];
 				}
-				[object setState:NSOnState];
+				[object setState:NSControlStateValueOn];
 				break;
 			}
 		}
@@ -2624,8 +2544,8 @@ static BOOL appleRemoteHoldDown = NO;
 		NSEnumerator *enumerator = [[[openSameFolderMenuItem submenu] itemArray] reverseObjectEnumerator];
 		id object;
 		while (object = [enumerator nextObject]) {
-			if ([object state] == NSOnState){
-				[object setState:NSOffState];
+			if ([object state] == NSControlStateValueOn){
+				[object setState:NSControlStateValueOff];
 				while (object = [enumerator nextObject]) {
 					if ([object isEnabled]) {
 						break;
@@ -2634,7 +2554,7 @@ static BOOL appleRemoteHoldDown = NO;
 				if (!object) {
 					object = [[[openSameFolderMenuItem submenu] itemArray] lastObject];
 				}
-				[object setState:NSOnState];
+				[object setState:NSControlStateValueOn];
 				break;
 			}
 		}
@@ -2915,17 +2835,14 @@ static BOOL appleRemoteHoldDown = NO;
 }
 
 
-static NSTimer* dontSleepTimer = nil;
-
 -(IBAction)slideshow:(id)sender
 {
 	if ([window isVisible]) {		
 		[NSCursor setHiddenUntilMouseMoves:YES];
 		if (timerSwitch) {
-			[dontSleepTimer invalidate];
-			dontSleepTimer = nil;
 			[timer invalidate];
 			timerSwitch=NO;
+			[self endSlideshowActivity];
 			[imageView setSlideshow:NO];
 		} else {
 			timer = [NSTimer scheduledTimerWithTimeInterval:sliderValue
@@ -2934,12 +2851,10 @@ static NSTimer* dontSleepTimer = nil;
 												   userInfo:NULL
 													repeats:YES];
 			timerSwitch=YES;
-			if (dontSleepTimer == nil) {
-				dontSleepTimer = [NSTimer scheduledTimerWithTimeInterval:25.0
-																  target:self
-																selector:@selector(dontSleep)
-																userInfo:NULL
-																 repeats:YES];
+			if (!slideshowActivity) {
+				slideshowActivity = [[[NSProcessInfo processInfo]
+					beginActivityWithOptions:NSActivityUserInitiated | NSActivityIdleDisplaySleepDisabled
+					                  reason:@"Image slideshow"] retain];
 			}
 			[imageView setSlideshow:YES];
 		}
@@ -2952,12 +2867,6 @@ static NSTimer* dontSleepTimer = nil;
 	[lock unlock];
 	useComposedImage = YES;
 	[self imageDisplay];
-}
-
--(void)dontSleep
-{
-	UpdateSystemActivity( OverallAct );
-	//UpdateSystemActivity( UsrActivity );
 }
 
 - (void)switchSingleWithPage:(int)page
@@ -3080,39 +2989,19 @@ static NSTimer* dontSleepTimer = nil;
 }
 - (void)trashFile:(NSString*)path
 {
-	int result = (int)NSRunAlertPanel(NSLocalizedString(@"Move to Trash",@""),
-								 NSLocalizedString(@"Do you really want to move %@ to the trash?",@""),
-								 NSLocalizedString(@"OK",@""), 
-								 NSLocalizedString(@"Cancel",@""), 
-								 nil,
-                                 [path lastPathComponent]);
-	
-	if(result == NSAlertDefaultReturn || result == NSAlertFirstButtonReturn) {
-		BOOL b = NO;
-		b = [[NSWorkspace sharedWorkspace] performFileOperation:NSWorkspaceRecycleOperation
-														 source:[path stringByDeletingLastPathComponent]
-													destination: @""
-														  files: [NSArray arrayWithObject:[path lastPathComponent]]
-															tag: nil];
-		if(!b) {
-			NSAppleScript*          script;
-			NSAppleEventDescriptor* desc;
-			NSDictionary*           error;
-			NSString *string;
-			//string = [NSString stringWithFormat:@"tell application \"Finder\" to delete POSIX file \"%@\"", [path precomposedStringWithCompatibilityMapping]]; 
-			string = [NSString stringWithFormat:@"tell application \"Finder\" to delete selection"];
-			script = [[NSAppleScript alloc] initWithSource:string];
-			[[NSWorkspace sharedWorkspace] selectFile:path inFileViewerRootedAtPath:@""];
-			desc = [script executeAndReturnError:&error];
-			//NSLog(@"1 %@ %@",desc,error);
-			[script release];
-			string = [NSString stringWithFormat:@"tell application \"cooViewer\" to activate"]; 
-			script = [[NSAppleScript alloc] initWithSource:string];
-			desc = [script executeAndReturnError:&error];
-			//NSLog(@"2 %@ %@",desc,error);
-			[script release];
-			
-		}
-	}
+	if (![path length]) return;
+	NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+	[alert setMessageText:NSLocalizedString(@"Move to Trash", @"")];
+	[alert setInformativeText:[NSString stringWithFormat:
+		NSLocalizedString(@"Do you really want to move %@ to the trash?", @""),
+		[path lastPathComponent]]];
+	[alert addButtonWithTitle:NSLocalizedString(@"OK", @"")];
+	[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"")];
+	if ([alert runModal] != NSAlertFirstButtonReturn) return;
+
+	[[NSWorkspace sharedWorkspace] recycleURLs:[NSArray arrayWithObject:[NSURL fileURLWithPath:path]]
+		completionHandler:^(NSDictionary *newURLs, NSError *error) {
+			if (error) [NSApp presentError:error];
+		}];
 }
 @end

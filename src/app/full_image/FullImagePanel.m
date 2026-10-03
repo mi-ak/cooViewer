@@ -8,6 +8,7 @@
 -(void)awakeFromNib
 {
 	keyArray = nil;
+	[self setCollectionBehavior:[self collectionBehavior] | NSWindowCollectionBehaviorFullScreenAuxiliary];
 }
 -(void)setTarget:(Controller *)tar
 {
@@ -18,17 +19,6 @@
 {
 	[self performClose:self];
 	[super resignKeyWindow];
-}
-
-
--(void)becomeKeyWindow
-{
-	[super becomeKeyWindow];
-	
-	if ([[[NSApp windowsMenu] itemWithTitle:NSLocalizedString(@"Fullscreen", @"")] state] == NSOnState){
-		if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DontHideMenuBar"] == NO) [NSMenu setMenuBarVisible:NO];
-	}
-	 
 }
 
 
@@ -72,7 +62,7 @@
 		// space
 		//[view spaceBarAction];
 		
-		BOOL shiftTemp = ([event modifierFlags] & NSShiftKeyMask) ? YES : NO;
+		BOOL shiftTemp = ([event modifierFlags] & NSEventModifierFlagShift) ? YES : NO;
 		
 		//NSScrollView *scrollView = [[[self contentView] subviews] objectAtIndex:0];
 		NSScrollView *scrollView = [view enclosingScrollView];
@@ -113,9 +103,9 @@
 		id dic;
 		
 		unsigned int cMod = 0;
-		BOOL shift = ([event modifierFlags] & NSShiftKeyMask) ? YES : NO;
-		BOOL option = ([event modifierFlags] & NSAlternateKeyMask) ? YES : NO;
-		BOOL control = ([event modifierFlags] & NSControlKeyMask) ? YES : NO;
+		BOOL shift = ([event modifierFlags] & NSEventModifierFlagShift) ? YES : NO;
+		BOOL option = ([event modifierFlags] & NSEventModifierFlagOption) ? YES : NO;
+		BOOL control = ([event modifierFlags] & NSEventModifierFlagControl) ? YES : NO;
 		
 		if (shift) cMod += 1;
 		if (option) cMod += 2;
@@ -158,7 +148,7 @@
                                 horizontalScrollerClass:nil
                                   verticalScrollerClass:nil
                                              borderType:[scrollView borderType]
-                                            controlSize:NSRegularControlSize
+                                            controlSize:NSControlSizeRegular
                                           scrollerStyle:[scrollView scrollerStyle]
     ];
     NSRect theScrollViewRect;
@@ -207,7 +197,7 @@
 {
 	//[super setLevel:NSNormalWindowLevel];
 	
-	if ([[[NSApp windowsMenu] itemWithTitle:NSLocalizedString(@"Fullscreen", @"")] state] == NSOffState){
+	if ([[[NSApp windowsMenu] itemWithTitle:NSLocalizedString(@"Fullscreen", @"")] state] == NSControlStateValueOff){
 		[super setLevel:NSNormalWindowLevel];
 	} else {
 		if (level == NSPopUpMenuWindowLevel) {

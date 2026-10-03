@@ -1,28 +1,8 @@
 #import "NSString_Compare.h"
-#include <sys/param.h>
-
-
-const UCCollateOptions FINDER_COMPARE_OPTIONS =
-kUCCollateComposeInsensitiveMask
-| kUCCollateWidthInsensitiveMask
-| kUCCollateCaseInsensitiveMask
-| kUCCollateDigitsOverrideMask
-| kUCCollateDigitsAsNumberMask
-| kUCCollatePunctuationSignificantMask;
-
 @implementation NSString (AddingCompare)
 - (NSComparisonResult)finderCompareS:(NSString *)aString
 {
-	SInt32 compareResult;
-	UniChar buff1[MAXPATHLEN];
-	UniChar buff2[MAXPATHLEN];
-	
-	[self getCharacters:buff1];
-	[aString getCharacters:buff2];
-	
-	UCCompareTextDefault(FINDER_COMPARE_OPTIONS, buff1, [self length], buff2, [aString length], NULL, &compareResult);
-	
-	return((NSComparisonResult)compareResult);      
+	return [self localizedStandardCompare:aString];
 }
 
 - (NSComparisonResult)randomCompare:(NSString *)otherString

@@ -2,7 +2,7 @@
 set -eu
 
 root_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-tmp_dir=$(mktemp -d)
+tmp_dir=$(mktemp -d /private/tmp/cooviewer-test.XXXXXX)
 trap 'rm -rf "$tmp_dir"' EXIT HUP INT TERM
 
 python3 - "$tmp_dir" <<'PY'
@@ -29,3 +29,18 @@ xcrun --sdk macosx clang \
 mkdir "$tmp_dir/output"
 "$tmp_dir/archive_reader_test" "$tmp_dir/nested.zip" "$tmp_dir/traversal.zip" "$tmp_dir/corrupt.zip" "$tmp_dir/output"
 echo 'Archive reader tests passed.'
+
+: > "$tmp_dir/book.txt"
+xcrun --sdk macosx clang \
+  -I "$root_dir/src/preference" \
+  -I "$root_dir/src/app/controller" \
+  "$root_dir/test/settings_migration_test.m" \
+  -framework Cocoa -framework Carbon -o "$tmp_dir/settings_migration_test"
+"$tmp_dir/settings_migration_test" "$tmp_dir/book.txt"
+
+xcrun --sdk macosx clang \
+  -I "$root_dir/src/extensions" \
+  "$root_dir/src/extensions/NSString_Compare.m" \
+  "$root_dir/test/string_compare_test.m" \
+  -framework Foundation -o "$tmp_dir/string_compare_test"
+"$tmp_dir/string_compare_test"

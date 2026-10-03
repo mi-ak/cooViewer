@@ -70,6 +70,7 @@
 }
 
 -(void)setScreenFitMode:(int)mode;
+-(void)setPreferences;
 
 -(void)setUseCalayer:(BOOL)use;
 -(void)setInterpolation:(int)index;
@@ -112,6 +113,7 @@
 
 -(void)drawPageBar;
 -(void)setSlideshow:(BOOL)b;
+- (void)wheelSetting:(float)value;
 -(void)setInfoString:(NSString*)string;
 
 -(id)accessoryView;

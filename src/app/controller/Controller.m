@@ -1,18 +1,39 @@
+#import "COArchivedSettings.h"
+#import "COFileBookmarks.h"
 #import "Controller.h"
 #import "COImageLoader.h"
 #import "PreferenceController.h"
 #import "NSString_Compare.h"
-#import "AppleRemote.h"
-#import "MultiClickRemoteBehavior.h"
 #import <Quartz/Quartz.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import "CustomWindow.h"
 #import "BookmarkController.h"
 #import "CustomImageView.h"
+#import "ThumbnailController.h"
 #import "FullImagePanel.h"
 
 @implementation Controller
 static const int DIALOG_OK		= 128;
 static const int DIALOG_CANCEL	= 129;
+
+static BOOL COConfirmAction(NSString *title, NSString *message)
+{
+	NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+	[alert setMessageText:title];
+	[alert setInformativeText:message];
+	[alert addButtonWithTitle:NSLocalizedString(@"OK", @"")];
+	[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"")];
+	return [alert runModal] == NSAlertFirstButtonReturn;
+}
+
+- (void)endSlideshowActivity
+{
+	if (slideshowActivity) {
+		[[NSProcessInfo processInfo] endActivity:slideshowActivity];
+		[slideshowActivity release];
+		slideshowActivity = nil;
+	}
+}
 
 /*
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -81,6 +102,10 @@ static const int DIALOG_CANCEL	= 129;
 	[appDefault setObject:[NSNumber numberWithInt:10] forKey:@"OpenRecentLimit"];
 	
 	[defaults registerDefaults:appDefault];
+	[defaults removeObjectForKey:@"ChangeCreator"];
+	[defaults removeObjectForKey:@"ChangeOpenWith"];
+	[defaults removeObjectForKey:@"DontHideMenuBar"];
+	restoreFullscreenOnNextKey = [defaults boolForKey:@"Fullscreen"];
 	
 	fitScreenMode = 0;
 	rotateMode=0;
@@ -88,6 +113,7 @@ static const int DIALOG_CANCEL	= 129;
 	if (![defaults arrayForKey:@"KeyArray"]) [PreferenceController setDefaultKeyArray];
 	if (![defaults arrayForKey:@"KeyArrayMode2"]) [PreferenceController setDefaultKeyArrayMode2];
 	if (![defaults arrayForKey:@"KeyArrayMode3"]) [PreferenceController setDefaultKeyArrayMode3];
+	[PreferenceController removeLegacyRemoteBindings];
 	keyArray = [[NSMutableArray alloc] initWithArray:[defaults arrayForKey:@"KeyArray"]];
 	keyArrayMode2 = [[NSMutableArray alloc] initWithArray:[defaults arrayForKey:@"KeyArrayMode2"]];
 	keyArrayMode3 = [[NSMutableArray alloc] initWithArray:[defaults arrayForKey:@"KeyArrayMode3"]];
@@ -182,17 +208,15 @@ static const int DIALOG_CANCEL	= 129;
 	/*view*/
 	NSColor *viewBackGround;
 	if ([defaults objectForKey:@"ViewBackGroundColor"]) {
-		viewBackGround = [NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"ViewBackGroundColor"]];
+		viewBackGround = COReadArchivedSetting(defaults, @"ViewBackGroundColor", [NSColor class]);
 	} else {
 		viewBackGround = [NSColor blackColor];
 	}
+	if (!viewBackGround) viewBackGround = [NSColor blackColor];
 	[window setBackgroundColor:viewBackGround];
     viewBackGround = [viewBackGround colorWithAlphaComponent:1];
 
 	fullscreen = [defaults boolForKey:@"Fullscreen"];
-	if (!fullscreen) {
-		[[[[[NSApp mainMenu] itemWithTitle:NSLocalizedString(@"Window", @"")] submenu]  itemWithTitle:NSLocalizedString(@"Fullscreen", @"")] setState:NSOffState];
-	}
 	
 	
 	
@@ -281,11 +305,6 @@ static const int DIALOG_CANCEL	= 129;
 	[defaults setBool:openLastFolder forKey:@"OpenLastFolder"];
 	[self setOpenRecentMenu];
 	
-	if ([defaults boolForKey:@"DontHideMenuBar"]) {
-		[window setHideMenuBar:NO];
-	} else {
-		[window setHideMenuBar:YES];
-	}
 	[[NSNotificationCenter defaultCenter] addObserver:self 
 											 selector:@selector(viewDidEndLiveResize:) 
 												 name:@"ViewDidEndLiveResize"
@@ -312,7 +331,8 @@ static const int DIALOG_CANCEL	= 129;
 			while (settingKey = [settingKeyEnu nextObject]) {
 				setting = [newBookSettings objectForKey:settingKey];
 				NSMutableDictionary *newSetting = [NSMutableDictionary dictionaryWithDictionary:setting];
-				[newSetting setObject:[self pathFromAliasData:[setting objectForKey:@"alias"]] forKey:@"temppath"];
+				NSString *path = [self pathFromAliasData:[setting objectForKey:@"alias"]];
+				if (path) [newSetting setObject:path forKey:@"temppath"];
 				[newBookSettings setObject:newSetting forKey:settingKey];
 			}
 			[defaults setObject:newBookSettings forKey:@"BookSettings"];
@@ -330,7 +350,8 @@ static const int DIALOG_CANCEL	= 129;
 				} else {
 					NSMutableDictionary *newInnerDic = [NSMutableDictionary dictionaryWithDictionary:object];
 					[newLastPages removeObjectAtIndex:index];
-					[newInnerDic setObject:[self pathFromAliasData:[object objectForKey:@"alias"]] forKey:@"temppath"];
+					NSString *path = [self pathFromAliasData:[object objectForKey:@"alias"]];
+					if (path) [newInnerDic setObject:path forKey:@"temppath"];
 					[newLastPages addObject:newInnerDic];
 				}
 			}
@@ -346,7 +367,8 @@ static const int DIALOG_CANCEL	= 129;
 				NSMutableDictionary *newInnerDic = [NSMutableDictionary dictionaryWithDictionary:object];
 				int index = (int)[[defaults arrayForKey:@"RecentItems"] indexOfObject:object];
 				[newRecentItems removeObjectAtIndex:index];
-				[newInnerDic setObject:[self pathFromAliasData:[object objectForKey:@"alias"]] forKey:@"temppath"];
+				NSString *path = [self pathFromAliasData:[object objectForKey:@"alias"]];
+				if (path) [newInnerDic setObject:path forKey:@"temppath"];
 				[newRecentItems insertObject:newInnerDic atIndex:index];
 			}
 			[defaults setObject:newRecentItems forKey:@"RecentItems"];
@@ -355,12 +377,6 @@ static const int DIALOG_CANCEL	= 129;
 	}
 #pragma mark only under 1.2b14
 	if ([@"1.2b14" versionCompare:oldVersion] == NSOrderedDescending && [defaults stringForKey:@"Version"]) {
-		unichar plus = kRemoteButtonPlus;
-		unichar minus = kRemoteButtonMinus;
-		unichar menu = kRemoteButtonMenu;
-		unichar play = kRemoteButtonPlay;
-		unichar right = kRemoteButtonRight;
-		unichar left = kRemoteButtonLeft;
 		 NSArray *numericKeyArray = [[NSMutableArray alloc] initWithObjects:
 			 [NSDictionary dictionaryWithObjectsAndKeys:
 				 [NSNumber numberWithInt:39],@"action",@"0",@"keyname", [NSString stringWithFormat:@"0"],@"key",
@@ -403,46 +419,14 @@ static const int DIALOG_CANCEL	= 129;
 				[NSNumber numberWithInt:0],@"modifier",[NSNumber numberWithInt:90],@"value",
 				nil],
 			 
-			 [NSDictionary dictionaryWithObjectsAndKeys:
-				 [NSNumber numberWithInt:7],@"action",
-				 @"AppleRemote Volume up",@"keyname", [NSString stringWithCharacters:&plus length:1],@"key",
-				 [NSNumber numberWithInt:100],@"modifier",
-				 nil],
-			 [NSDictionary dictionaryWithObjectsAndKeys:
-				 [NSNumber numberWithInt:6],@"action",
-				 @"AppleRemote Volume down",@"keyname", [NSString stringWithCharacters:&minus length:1],@"key",
-				 [NSNumber numberWithInt:100],@"modifier",
-				 nil],
-			 [NSDictionary dictionaryWithObjectsAndKeys:
-				 [NSNumber numberWithInt:18],@"action",
-				 @"AppleRemote Menu",@"keyname", [NSString stringWithCharacters:&menu length:1],@"key",
-				 [NSNumber numberWithInt:100],@"modifier",
-				 nil],
-			 [NSDictionary dictionaryWithObjectsAndKeys:
-				 [NSNumber numberWithInt:17],@"action",
-				 @"AppleRemote Play",@"keyname", [NSString stringWithCharacters:&play length:1],@"key",
-				 [NSNumber numberWithInt:100],@"modifier",
-				 nil],
-			 [NSDictionary dictionaryWithObjectsAndKeys:
-				 [NSNumber numberWithInt:1],@"action",
-				 @"AppleRemote Right",@"keyname", [NSString stringWithCharacters:&right length:1],@"key",
-				 [NSNumber numberWithInt:100],@"modifier",
-				 [NSNumber numberWithBool:YES],@"switchAction",
-				 nil],
-			 [NSDictionary dictionaryWithObjectsAndKeys:
-				 [NSNumber numberWithInt:0],@"action",
-				 @"AppleRemote Left",@"keyname", [NSString stringWithCharacters:&left length:1],@"key",
-				 [NSNumber numberWithInt:100],@"modifier",
-				 [NSNumber numberWithBool:YES],@"switchAction",
-				 nil],
-			nil];
+				nil];
 		 [keyArray addObjectsFromArray:numericKeyArray];
 		 [defaults setObject:keyArray forKey:@"KeyArray"];
 		 [numericKeyArray release];
 		 
 		 if ([defaults objectForKey:@"PageBarBGColor"]) {
-			 [defaults setObject:[NSArchiver archivedDataWithRootObject:
-				 [[NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"PageBarBGColor"]] colorWithAlphaComponent:0.8]] forKey:@"PageBarBGColor"];
+			 NSColor *color = COReadArchivedSetting(defaults, @"PageBarBGColor", [NSColor class]);
+			 if (color) COWriteArchivedSetting(defaults, @"PageBarBGColor", [color colorWithAlphaComponent:0.8]);
 		 }
 	}
 	if ([@"1.2b17" versionCompare:oldVersion] == NSOrderedDescending && [defaults stringForKey:@"Version"]) {
@@ -532,8 +516,7 @@ static const int DIALOG_CANCEL	= 129;
 		//NSLog(@"%@ %@ left is big",nowVer,plist);
 		[defaults setObject:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] forKey:@"Version"];
 	}
-	[self setupRemoteControl];
-	
+	[self migrateStoredFileBookmarks];
 	[imageView setPreferences];
 }
 
@@ -572,29 +555,6 @@ static const int DIALOG_CANCEL	= 129;
 	}
  }
  
-#pragma mark appleRemote
-- (void)setupRemoteControl
-{
-	remoteControl = [[AppleRemote alloc] initWithDelegate: self];
-	[remoteControl setDelegate: self];	
-	
-	// OPTIONAL CODE 
-	// The MultiClickRemoteBehavior adds extra functionality.
-	// It works like a middle man between the delegate and the remote control
-	remoteControlBehavior = [MultiClickRemoteBehavior new];		
-	[remoteControlBehavior setDelegate: self];
-	[remoteControlBehavior setSimulateHoldEvent:YES];
-	[remoteControl setOpenInExclusiveMode:YES];
-	[remoteControl setDelegate: remoteControlBehavior];
-    [remoteControl startListening: self];
-}
-- (void)applicationWillBecomeActive:(NSNotification *)aNotification {
-    [remoteControl startListening: self];
-}
-- (void)applicationWillResignActive:(NSNotification *)aNotification {
-    [remoteControl stopListening: self];
-}
-
 #pragma mark openFromAny
 - (IBAction)openTheLastPage:(id)sender
 {
@@ -614,7 +574,7 @@ static const int DIALOG_CANCEL	= 129;
 			NSEnumerator *enu = [[defaults arrayForKey:@"LastPages"] objectEnumerator];
 			id object;
 			while (object = [enu nextObject]) {
-				if ([[self pathFromAliasData:[object objectForKey:@"alias"]] isEqualToString:currentBookPath]) {
+				if ([COPathFromStoredEntry(object) isEqualToString:currentBookPath]) {
 					page = [[object objectForKey:@"page"] intValue];
 					[self goTo:page array:nil];
 					return;
@@ -622,11 +582,13 @@ static const int DIALOG_CANCEL	= 129;
 			}
 		}
 	} else {
-		if ([[defaults arrayForKey:@"RecentItems"] count]>0) {
-			NSArray *array = [defaults arrayForKey:@"RecentItems"];
-			[self setCurrentBookPath:[self pathFromAliasData:[[array objectAtIndex:0] objectForKey:@"alias"]]];
-			
-			[self openPage:[[[array objectAtIndex:0] objectForKey:@"page"] intValue] last:NO];
+		for (NSDictionary *recent in [defaults arrayForKey:@"RecentItems"]) {
+			NSString *path = COPathFromStoredEntry(recent);
+			if (path && [[NSFileManager defaultManager] fileExistsAtPath:path]) {
+				[self setCurrentBookPath:path];
+				[self openPage:[[recent objectForKey:@"page"] intValue] last:NO];
+				break;
+			}
 		}
 	}
 }
@@ -637,6 +599,7 @@ static const int DIALOG_CANCEL	= 129;
 	if (timerSwitch) {
 		[timer invalidate];
 		timerSwitch=NO;
+		[self endSlideshowActivity];
 	}
 	
 	[self setCurrentBookPathAndOldBookPath:filename];	
@@ -651,23 +614,30 @@ static const int DIALOG_CANCEL	= 129;
 	if (timerSwitch) {
 		[timer invalidate];
 		timerSwitch=NO;
+		[self endSlideshowActivity];
 	}
 	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
 	int openPanelResult;
 	
 	[openPanel setCanChooseDirectories:YES];
-    NSMutableArray *tempArray = [NSMutableArray arrayWithArray:[COImageLoader fileTypes]];
+	NSMutableArray *tempArray = [NSMutableArray arrayWithArray:[COImageLoader fileTypes]];
 	[tempArray addObjectsFromArray:[COImageLoader imageFileTypes]];
-    [openPanel setAllowedFileTypes:tempArray];
+	NSMutableArray *contentTypes = [NSMutableArray array];
+	for (NSString *extension in tempArray) {
+		UTType *type = [UTType typeWithFilenameExtension:[extension lowercaseString]];
+		if (type && ![contentTypes containsObject:type]) [contentTypes addObject:type];
+	}
+	[openPanel setAllowedContentTypes:contentTypes];
 	openPanelResult = (int)[openPanel runModal];
 	
-	if (openPanelResult == NSCancelButton) {
+	if (openPanelResult == NSModalResponseCancel) {
 		return;
 	}
-	if (openPanelResult == NSOKButton) {
+	if (openPanelResult == NSModalResponseOK) {
 		if (timerSwitch) {
 			[timer invalidate];
 			timerSwitch=NO;
+			[self endSlideshowActivity];
 		}
 		[self setCurrentBookPathAndOldBookPath:[[openPanel URL] path]];
 		
@@ -691,7 +661,7 @@ static const int DIALOG_CANCEL	= 129;
 
 -(void)openFromOpenRecent:(id)sender
 {	
-	[self setCurrentBookPathAndOldBookPath:[self pathFromAliasData:[[sender representedObject] objectForKey:@"alias"]]];
+	[self setCurrentBookPathAndOldBookPath:COPathFromStoredEntry([sender representedObject])];
 	
 	[self openPage:[[[sender representedObject] objectForKey:@"page"] intValue] last:NO];
 }
@@ -917,14 +887,8 @@ static const int DIALOG_CANCEL	= 129;
 			}
 		}
 		if (goToLastPageMode==0 && page) {
-			int result = (int)NSRunAlertPanel(NSLocalizedString(@"Go to the last page",@""),
-										 NSLocalizedString(@"Do you want to go to %i page?",@""),
-										 NSLocalizedString(@"OK",@""), 
-										 NSLocalizedString(@"Cancel",@""), 
-										 nil,page+1);
-			
-			if(result == NSAlertDefaultReturn || result == NSAlertFirstButtonReturn) {			
-			} else {
+			if (!COConfirmAction(NSLocalizedString(@"Go to the last page", @""),
+				[NSString stringWithFormat:NSLocalizedString(@"Do you want to go to %i page?", @""), page + 1])) {
 				page = 0;
 			}
 		}
@@ -952,7 +916,7 @@ static const int DIALOG_CANCEL	= 129;
 	}
 	[self setOpenRecentMenu];
 	NSMenu *menu=[openRecentMenuItem submenu];
-	[[menu itemAtIndex:0] setState:NSOnState];
+	[[menu itemAtIndex:0] setState:NSControlStateValueOn];
 	[[menu itemAtIndex:0] setEnabled:NO];
 	
 	[defaults synchronize];
@@ -1042,7 +1006,6 @@ static const int DIALOG_CANCEL	= 129;
 	
 	[progressIndicator stopAnimation:self];
 	//[imageView displayRect:rect];
-	[window updateTrackingRect];
 	[self viewSet];
 	[self imageDisplay];
 	
@@ -1055,64 +1018,7 @@ static const int DIALOG_CANCEL	= 129;
 			[thumController showThumbnail:nowPage];
 		}
 	}
-	/*
-	if ([defaults boolForKey:@"ChangeCreator"]) {
-		NSString *tempPath = currentBookPath;
-		if (fromFileName) tempPath = fromFileName;
-		
-		if ([[tempPath pathExtension] compare:@"savedSearch" options:NSCaseInsensitiveSearch] == NSOrderedSame) return;
-		BOOL isDir;
-		NSFileManager *manager = [NSFileManager defaultManager];
-		if ([manager fileExistsAtPath:tempPath isDirectory:&isDir]) {
-			if (isDir) {
-				if (![[NSWorkspace sharedWorkspace] isFilePackageAtPath:tempPath]) {
-					NSLog(@"isDir");
-				}
-			}
-			NSMutableDictionary *newAttr = [NSMutableDictionary dictionaryWithDictionary:[manager fileAttributesAtPath:tempPath traverseLink:YES]];
-			NSString *creatorCodeString = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleSignature"];
-			NSNumber *creatorCode = [NSNumber numberWithUnsignedLong:
-				NSHFSTypeCodeFromFileType([NSString stringWithFormat:@"'%@'",creatorCodeString])];
-			[newAttr setObject:creatorCode forKey:NSFileHFSCreatorCode];
-			[manager changeFileAttributes:newAttr atPath:tempPath];
-			[[NSWorkspace sharedWorkspace] noteFileSystemChanged:tempPath];
-		}
-	}*/
-	/*
-	if ([defaults boolForKey:@"ChangeOpenWith"]) {
-		NSString *tempPath = currentBookPath;
-		if (fromFileName) tempPath = fromFileName;
-		if ([[tempPath pathExtension] compare:@"savedSearch" options:NSCaseInsensitiveSearch] == NSOrderedSame) return;		
-		BOOL isDir;
-		if ([[NSFileManager defaultManager] fileExistsAtPath:tempPath isDirectory:&isDir]) {
-			if (isDir && ![[NSWorkspace sharedWorkspace] isFilePackageAtPath:tempPath]) return;
-			
-			FSRef pathRef;
-			FSRef appPathRef;
-			OSStatus pathErr = noErr;
-			OSStatus appPathErr = noErr;
-			pathErr = FSPathMakeRef((const UInt8 *)[tempPath fileSystemRepresentation],&pathRef,NULL);
-			appPathErr = FSPathMakeRef((const UInt8 *)[[[NSBundle mainBundle] bundlePath] fileSystemRepresentation],&appPathRef,NULL);
-			if (pathErr == noErr && appPathErr == noErr) {
-				OSStatus bindErr = noErr;
-				bindErr = _LSSetStrongBindingForRef(&pathRef,&appPathRef);
-				if (bindErr != noErr) {
-					NSLog(@"ApplicationBindingErr");
-					return;
-				}
-			}
-			
-			NSMutableDictionary *newAttr = [NSMutableDictionary dictionaryWithDictionary:[[NSFileManager defaultManager] fileAttributesAtPath:tempPath traverseLink:YES]];
-			NSString *creatorCodeString = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleSignature"];
-			NSNumber *creatorCode = [NSNumber numberWithUnsignedLong:
-				NSHFSTypeCodeFromFileType([NSString stringWithFormat:@"'%@'",creatorCodeString])];
-			//NSLog(@"%@",creatorCodeString);
-			[newAttr setObject:creatorCode forKey:NSFileHFSCreatorCode];
-			[[NSFileManager defaultManager] changeFileAttributes:newAttr atPath:tempPath];
-			[[NSWorkspace sharedWorkspace] noteFileSystemChanged:tempPath];
-		}
-	}
-    */
+
 	
 }
 - (void)askInArchivePassword:(COImageLoader*)loader
@@ -1495,18 +1401,18 @@ static const int DIALOG_CANCEL	= 129;
 		case 0: case 2:
             [image1 drawInRect:NSMakeRect(0,center1,widthValue1,heightValue1)
                       fromRect:NSMakeRect(0, 0, [image1 size].width, [image1 size].height)
-                     operation:NSCompositeSourceOver fraction:1.0];
+                     operation:NSCompositingOperationSourceOver fraction:1.0];
             [image2 drawInRect:NSMakeRect(widthValue1,center2,widthValue2,heightValue2)
                       fromRect:NSMakeRect(0, 0, [image2 size].width, [image2 size].height)
-                     operation:NSCompositeSourceOver fraction:1.0];
+                     operation:NSCompositingOperationSourceOver fraction:1.0];
 			break;
 		case 1: case 3:
             [image2 drawInRect:NSMakeRect(0,center2,widthValue2,heightValue2)
                       fromRect:NSMakeRect(0, 0, [image2 size].width, [image2 size].height)
-                     operation:NSCompositeSourceOver fraction:1.0];
+                     operation:NSCompositingOperationSourceOver fraction:1.0];
             [image1 drawInRect:NSMakeRect(widthValue2,center1,widthValue1,heightValue1)
                       fromRect:NSMakeRect(0, 0, [image1 size].width, [image1 size].height)
-                     operation:NSCompositeSourceOver fraction:1.0];
+                     operation:NSCompositingOperationSourceOver fraction:1.0];
 			break;
 		default:
 			break;
@@ -1602,14 +1508,9 @@ static const int DIALOG_CANCEL	= 129;
 	*/
 	//[lock lock];
 	//[lock unlock];
-	//[window disableFlushWindow];
 	
-	NSDisableScreenUpdates();
     [self lockedImageDisplay];
-    NSEnableScreenUpdates();
 	
-	//[window enableFlushWindow];
-	//[window flushWindowIfNeeded];
 	
 	/*
 	stop=[NSDate timeIntervalSinceReferenceDate];
@@ -1634,6 +1535,7 @@ static const int DIALOG_CANCEL	= 129;
 				if (timerSwitch) {
 					[timer invalidate];
 					timerSwitch=NO;
+					[self endSlideshowActivity];
 				}
 			}
 		} else if (nowPage < [completeMutableArray count]) {
@@ -1728,6 +1630,7 @@ static const int DIALOG_CANCEL	= 129;
 				if (timerSwitch) {
 					[timer invalidate];
 					timerSwitch=NO;
+					[self endSlideshowActivity];
 				}
 			}
 		}
@@ -1794,7 +1697,7 @@ static const int DIALOG_CANCEL	= 129;
 			[self setOpenRecentMenu];
 			if ([imageView image]) {
 				NSMenu *menu=[openRecentMenuItem submenu];
-				[[menu itemAtIndex:0] setState:NSOnState];
+				[[menu itemAtIndex:0] setState:NSControlStateValueOn];
 				[[menu itemAtIndex:0] setEnabled:NO];
 			}
 		} else {
@@ -1825,18 +1728,12 @@ static const int DIALOG_CANCEL	= 129;
 	
 
 	
-	[window disableFlushWindow];
 	
     BOOL useCalayer = [defaults boolForKey:@"UseCALayer"];
     [imageView setUseCalayer:useCalayer];
 	
-	if ([defaults boolForKey:@"DontHideMenuBar"]) {
-		[window setHideMenuBar:NO];
-	} else {
-		[window setHideMenuBar:YES];
-	}
     
-    NSColor *viewBackGround = [[NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"ViewBackGroundColor"]] colorWithAlphaComponent:1];
+    NSColor *viewBackGround = [COReadArchivedSetting(defaults, @"ViewBackGroundColor", [NSColor class]) colorWithAlphaComponent:1];
     [window setBackgroundColor:viewBackGround];
     if (fitScreenMode > 0) {
         [[imageView enclosingScrollView] setBackgroundColor:viewBackGround];
@@ -1939,7 +1836,6 @@ static const int DIALOG_CANCEL	= 129;
 	}
 	
 	[imageView setPreferences];
-	[window enableFlushWindow];
 	
 	
 	
@@ -2016,24 +1912,15 @@ static const int DIALOG_CANCEL	= 129;
 			return YES;
 		}
 	} else if ([[anItem title] isEqualToString:NSLocalizedString(@"Fullscreen", @"")] == YES) {
-		if ([window isVisible]) {
-			if (![window isKeyWindow]) {
-				return NO;
-			} else {
-				return YES;
-			}
-		} else if ([window isMiniaturized]) {
-			return NO;
-		} else {
-			return YES;
-		}
+		[anItem setState:[window isFullScreen] ? NSControlStateValueOn : NSControlStateValueOff];
+		return [window isVisible] && [window isKeyWindow];
 	} else if ([[anItem title] isEqualToString:NSLocalizedString(@"Open the last page", @"")] == YES) {
 		if ([window isVisible] || [window isMiniaturized]) {
 			if ([defaults arrayForKey:@"RecentItems"]) {
 				NSEnumerator *enu = [[defaults arrayForKey:@"RecentItems"] objectEnumerator];
 				id object;
 				while (object = [enu nextObject]) {
-					if ([[self pathFromAliasData:[object objectForKey:@"alias"]] isEqualToString:currentBookPath] && [object objectForKey:@"page"]) {
+					if ([COPathFromStoredEntry(object) isEqualToString:currentBookPath] && [object objectForKey:@"page"]) {
 						return YES;
 					}
 				}
@@ -2042,7 +1929,7 @@ static const int DIALOG_CANCEL	= 129;
 				NSEnumerator *enu = [[defaults arrayForKey:@"LastPages"] objectEnumerator];
 				id object;
 				while (object = [enu nextObject]) {
-					if ([[self pathFromAliasData:[object objectForKey:@"alias"]] isEqualToString:currentBookPath] && [object objectForKey:@"page"]) {
+					if ([COPathFromStoredEntry(object) isEqualToString:currentBookPath] && [object objectForKey:@"page"]) {
 						return YES;
 					}
 				}
@@ -2062,9 +1949,9 @@ static const int DIALOG_CANCEL	= 129;
 	} else if ([[anItem title] isEqualToString:NSLocalizedString(@"Right to Left", @"")] == YES) {
 		if ([window isVisible]) {
 			if (readMode == 0) {
-				[anItem setState:NSOnState];
+				[anItem setState:NSControlStateValueOn];
 			} else {
-				[anItem setState:NSOffState];
+				[anItem setState:NSControlStateValueOff];
 			}
 			return YES;
 		} else {
@@ -2073,9 +1960,9 @@ static const int DIALOG_CANCEL	= 129;
 	} else if ([[anItem title] isEqualToString:NSLocalizedString(@"Left to Right", @"")] == YES) {
 		if ([window isVisible]) {
 			if (readMode == 1) {
-				[anItem setState:NSOnState];
+				[anItem setState:NSControlStateValueOn];
 			} else {
-				[anItem setState:NSOffState];
+				[anItem setState:NSControlStateValueOff];
 			}
 			return YES;
 		} else {
@@ -2084,9 +1971,9 @@ static const int DIALOG_CANCEL	= 129;
 	} else if ([[anItem title] isEqualToString:NSLocalizedString(@"Right to Left (single)", @"")] == YES) {
 		if ([window isVisible]) {
 			if (readMode == 2) {
-				[anItem setState:NSOnState];
+				[anItem setState:NSControlStateValueOn];
 			} else {
-				[anItem setState:NSOffState];
+				[anItem setState:NSControlStateValueOff];
 			}
 			return YES;
 		} else {
@@ -2095,9 +1982,9 @@ static const int DIALOG_CANCEL	= 129;
 	} else if ([[anItem title] isEqualToString:NSLocalizedString(@"Left to Right (single)", @"")] == YES) {
 		if ([window isVisible]) {
 			if (readMode == 3) {
-				[anItem setState:NSOnState];
+				[anItem setState:NSControlStateValueOn];
 			} else {
-				[anItem setState:NSOffState];
+				[anItem setState:NSControlStateValueOff];
 			}
 			return YES;
 		} else {
@@ -2106,9 +1993,9 @@ static const int DIALOG_CANCEL	= 129;
 	} else if ([[anItem title] isEqualToString:NSLocalizedString(@"Fit to Screen", @"")] == YES) {
 		if ([window isVisible]) {
 			if (fitScreenMode == 0) {
-				[anItem setState:NSOnState];
+				[anItem setState:NSControlStateValueOn];
 			} else {
-				[anItem setState:NSOffState];
+				[anItem setState:NSControlStateValueOff];
 			}
 			return YES;
 		} else {
@@ -2117,9 +2004,9 @@ static const int DIALOG_CANCEL	= 129;
 	} else if ([[anItem title] isEqualToString:NSLocalizedString(@"Fit to Screen Width", @"")] == YES) {
 		if ([window isVisible]) {
 			if (fitScreenMode == 1) {
-				[anItem setState:NSOnState];
+				[anItem setState:NSControlStateValueOn];
 			} else {
-				[anItem setState:NSOffState];
+				[anItem setState:NSControlStateValueOff];
 			}
 			return YES;
 		} else {
@@ -2128,9 +2015,9 @@ static const int DIALOG_CANCEL	= 129;
 	} else if ([[anItem title] isEqualToString:NSLocalizedString(@"No Scale", @"")] == YES) {
 		if ([window isVisible]) {
 			if (fitScreenMode == 2) {
-				[anItem setState:NSOnState];
+				[anItem setState:NSControlStateValueOn];
 			} else {
-				[anItem setState:NSOffState];
+				[anItem setState:NSControlStateValueOff];
 			}
 			return YES;
 		} else {
@@ -2139,9 +2026,9 @@ static const int DIALOG_CANCEL	= 129;
 	} else if ([[anItem title] isEqualToString:NSLocalizedString(@"Fit to Screen Width(divide)", @"")] == YES) {
 		if ([window isVisible]) {
 			if (fitScreenMode == 3) {
-				[anItem setState:NSOnState];
+				[anItem setState:NSControlStateValueOn];
 			} else {
-				[anItem setState:NSOffState];
+				[anItem setState:NSControlStateValueOff];
 			}
 			return YES;
 		} else {
@@ -2169,9 +2056,9 @@ static const int DIALOG_CANCEL	= 129;
 	} else if ([[anItem title] isEqualToString:NSLocalizedString(@"Name", @"")] == YES) {
 		if ([window isVisible]) {
 			if (sortMode == 0) {
-				[anItem setState:NSOnState];
+				[anItem setState:NSControlStateValueOn];
 			} else {
-				[anItem setState:NSOffState];
+				[anItem setState:NSControlStateValueOff];
 			}
 			return YES;
 		} else {
@@ -2180,9 +2067,9 @@ static const int DIALOG_CANCEL	= 129;
 	} else if ([[anItem title] isEqualToString:NSLocalizedString(@"Shuffle", @"")] == YES) {
 		if ([window isVisible]) {
 			if (sortMode == 1) {
-				[anItem setState:NSOnState];
+				[anItem setState:NSControlStateValueOn];
 			} else {
-				[anItem setState:NSOffState];
+				[anItem setState:NSControlStateValueOff];
 			}
 			return YES;
 		} else {
@@ -2191,9 +2078,9 @@ static const int DIALOG_CANCEL	= 129;
 	} else if ([[anItem title] isEqualToString:NSLocalizedString(@"Creation Date", @"")] == YES) {
 		if ([window isVisible]) {
 			if (sortMode == 2) {
-				[anItem setState:NSOnState];
+				[anItem setState:NSControlStateValueOn];
 			} else {
-				[anItem setState:NSOffState];
+				[anItem setState:NSControlStateValueOff];
 			}
 			if ([imageLoader canSortByDate]) {
 				return YES;
@@ -2206,9 +2093,9 @@ static const int DIALOG_CANCEL	= 129;
 	} else if ([[anItem title] isEqualToString:NSLocalizedString(@"Modification Date", @"")] == YES) {
 		if ([window isVisible]) {
 			if (sortMode == 3) {
-				[anItem setState:NSOnState];
+				[anItem setState:NSControlStateValueOn];
 			} else {
-				[anItem setState:NSOffState];
+				[anItem setState:NSControlStateValueOff];
 			}
 			if ([imageLoader canSortByDate]) {
 				return YES;
@@ -2367,7 +2254,7 @@ static const int DIALOG_CANCEL	= 129;
 					[item setRepresentedObject:[superPath stringByAppendingPathComponent:object]];
 					
 					if ([object isEqualToString:tmpCurrentBookName]) {
-						[item setState:NSOnState];
+						[item setState:NSControlStateValueOn];
 					}
 				} else {
 					if([[COImageLoader fileTypes] containsObject:[[object pathExtension] lowercaseString]]){
@@ -2378,7 +2265,7 @@ static const int DIALOG_CANCEL	= 129;
 						[item setRepresentedObject:[superPath stringByAppendingPathComponent:object] ];
 						
 						if ([object isEqualToString:tmpCurrentBookName]) {
-							[item setState:NSOnState];
+							[item setState:NSControlStateValueOn];
 						}
 					}
 				}
@@ -2397,10 +2284,10 @@ static const int DIALOG_CANCEL	= 129;
 		int setStateCount = 0;
 		while (object = [enumerator nextObject]) {
 			if ([[[object representedObject] lastPathComponent] isEqualToString:tmpCurrentBookName]){
-				[object setState:NSOnState];
+				[object setState:NSControlStateValueOn];
 				setStateCount++;
-			} else if ([object state] == NSOnState) {
-				[object setState:NSOffState];
+			} else if ([object state] == NSControlStateValueOn) {
+				[object setState:NSControlStateValueOff];
 				setStateCount++;
 			}
 			if (setStateCount==2) {
@@ -2426,8 +2313,7 @@ static const int DIALOG_CANCEL	= 129;
 	NSEnumerator *enumerator = [array reverseObjectEnumerator];
 	id object;
 	while (object = [enumerator nextObject]) {
-		NSData *aliasData = [object objectForKey:@"alias"];
-		NSString *path = [self pathFromAliasData:aliasData];
+		NSString *path = COPathFromStoredEntry(object);
 		if (path) {
 			if ([path isEqualToString:@"file not found"]) {
 				NSMenuItem *menuItem = [[NSMenuItem alloc] 
@@ -2464,9 +2350,11 @@ static const int DIALOG_CANCEL	= 129;
 				[menu insertItem:menuItem atIndex:0];
 			}
 		} else {
-			[array removeObject:object];
-			[defaults setObject:array forKey:@"RecentItems"];
-			[defaults synchronize];
+			NSMenuItem *menuItem = [[[NSMenuItem alloc]
+				initWithTitle:NSLocalizedString(@"file not found", @"")
+				     action:nil keyEquivalent:@""] autorelease];
+			[menuItem setEnabled:NO];
+			[menu insertItem:menuItem atIndex:0];
 		}
 	}
 }
@@ -2559,6 +2447,7 @@ static const int DIALOG_CANCEL	= 129;
 	if (timerSwitch) {
 		[timer invalidate];
 		timerSwitch=NO;
+		[self endSlideshowActivity];
 	}
 	if ([imageView image]) {
 		NSDictionary *dic = [NSDictionary dictionaryWithObject:currentBookPath forKey:@"dirPath"];
@@ -2591,7 +2480,6 @@ static const int DIALOG_CANCEL	= 129;
 	if (fitScreenMode == 0) {
 		return;
 	}
-	[window disableFlushWindow];
 	[[window contentView] replaceSubview:[imageView enclosingScrollView] with:imageView];
 	[imageView setFrame:[[window contentView] frame]];
 	
@@ -2610,8 +2498,6 @@ static const int DIALOG_CANCEL	= 129;
 	} else {
 		[imageView setImage:firstImage];
 	}
-	[window enableFlushWindow];
-	[window flushWindowIfNeeded];
 	[imageView setInfoString:[NSString stringWithFormat:@"Fit to Screen"]];
 }
 
@@ -2630,7 +2516,6 @@ static const int DIALOG_CANCEL	= 129;
 		[imageView release];
 		//[scroll setDocumentCursor:[NSCursor openHandCursor]];
 	}
-	[window disableFlushWindow];
 	fitScreenMode = 1;
 	[imageView setScreenFitMode:fitScreenMode];
 	if (bufferingMode == 0) {
@@ -2646,8 +2531,6 @@ static const int DIALOG_CANCEL	= 129;
 	} else {
 		[imageView setImage:firstImage];
 	}	
-	[window enableFlushWindow];
-	[window flushWindowIfNeeded];
 	[imageView setInfoString:[NSString stringWithFormat:@"Fit to Screen Width"]];
 }
 
@@ -2666,7 +2549,6 @@ static const int DIALOG_CANCEL	= 129;
 		[imageView release];
 		//[scroll setDocumentCursor:[NSCursor openHandCursor]];
 	}
-	[window disableFlushWindow];
 	fitScreenMode = 3;
 	[imageView setScreenFitMode:fitScreenMode];
 	if (bufferingMode == 0) {
@@ -2682,8 +2564,6 @@ static const int DIALOG_CANCEL	= 129;
 	} else {
 		[imageView setImage:firstImage];
 	}	
-	[window enableFlushWindow];
-	[window flushWindowIfNeeded];
 	[imageView setInfoString:[NSString stringWithFormat:@"Fit to Screen Width(Divide)"]];
 }
 
@@ -2702,7 +2582,6 @@ static const int DIALOG_CANCEL	= 129;
 		[imageView release];
 		//[scroll setDocumentCursor:[NSCursor openHandCursor]];
 	}
-	[window disableFlushWindow];
 	fitScreenMode = 2;
 	[imageView setScreenFitMode:fitScreenMode];
 	if (bufferingMode == 0) {
@@ -2718,8 +2597,6 @@ static const int DIALOG_CANCEL	= 129;
 	} else {
 		[imageView setImage:firstImage];
 	}
-	[window enableFlushWindow];
-	[window flushWindowIfNeeded];
 	[imageView setInfoString:[NSString stringWithFormat:@"No Scale"]];
 }
 
@@ -2751,16 +2628,12 @@ static const int DIALOG_CANCEL	= 129;
 
 - (IBAction)fullscreen:(id)sender
 {
-	if ([sender state] == NSOffState) {
-		[window setFullScreen:YES];
-		[sender setState:NSOnState];
-		[defaults setBool:YES forKey:@"Fullscreen"];
-	} else {
-		[window setFullScreen:NO];
-		[sender setState:NSOffState];
-		[defaults setBool:NO forKey:@"Fullscreen"];
-	}
-	
+	[window toggleFullScreen:sender];
+}
+
+- (void)updateImageAfterFullScreenChange
+{
+	if (!firstImage && !secondImage) return;
 	if (bufferingMode == 0) {
 		if (secondImage) {
 			[self composeImage];
@@ -2776,6 +2649,31 @@ static const int DIALOG_CANCEL	= 129;
             [imageView setImage:firstImage];
         }
     }
+}
+
+- (void)enterRestoredFullScreen
+{
+	if ([window isVisible] && ![window isFullScreen]) [window toggleFullScreen:self];
+}
+
+- (void)windowDidBecomeKey:(NSNotification *)notification
+{
+	if ([notification object] == window && restoreFullscreenOnNextKey) {
+		restoreFullscreenOnNextKey = NO;
+		[self performSelector:@selector(enterRestoredFullScreen) withObject:nil afterDelay:0];
+	}
+}
+
+- (void)windowDidEnterFullScreen:(NSNotification *)notification
+{
+	[defaults setBool:YES forKey:@"Fullscreen"];
+	[self updateImageAfterFullScreenChange];
+}
+
+- (void)windowDidExitFullScreen:(NSNotification *)notification
+{
+	[defaults setBool:NO forKey:@"Fullscreen"];
+	[self updateImageAfterFullScreenChange];
 }
 
 
@@ -2796,6 +2694,7 @@ static const int DIALOG_CANCEL	= 129;
 		if (timerSwitch) {
 			[timer invalidate];
 			timerSwitch=NO;
+			[self endSlideshowActivity];
 		}
 		if ([bookmarkMenuItem numberOfItems] > 2) {
 			while ([bookmarkMenuItem numberOfItems] > 2) {
@@ -2804,8 +2703,8 @@ static const int DIALOG_CANCEL	= 129;
 		}
 		int iA;
 		for (iA=0; iA<[[openSameFolderMenuItem submenu] numberOfItems]; iA++) {
-			if ([[[openSameFolderMenuItem submenu] itemAtIndex:iA] state] == NSOnState) {
-				[[[openSameFolderMenuItem submenu] itemAtIndex:iA] setState:NSOffState];
+			if ([[[openSameFolderMenuItem submenu] itemAtIndex:iA] state] == NSControlStateValueOn) {
+				[[[openSameFolderMenuItem submenu] itemAtIndex:iA] setState:NSControlStateValueOff];
 				break;
 			}
 		}
@@ -2865,7 +2764,7 @@ static const int DIALOG_CANCEL	= 129;
 				NSEnumerator *enu = [array objectEnumerator];
 				id object;
 				while (object = [enu nextObject]) {
-					if ([[self pathFromAliasData:[object objectForKey:@"alias"]] isEqualToString:currentBookPath]) {
+					if ([COPathFromStoredEntry(object) isEqualToString:currentBookPath]) {
 						[array removeObject:object];
 						break;
 					}
@@ -2888,7 +2787,7 @@ static const int DIALOG_CANCEL	= 129;
 				NSEnumerator *enu = [array objectEnumerator];
 				id object;
 				while (object = [enu nextObject]) {
-					if ([[self pathFromAliasData:[object objectForKey:@"alias"]] isEqualToString:currentBookPath]) {
+					if ([COPathFromStoredEntry(object) isEqualToString:currentBookPath]) {
 						[array removeObject:object];
 						break;
 					}
@@ -2944,16 +2843,9 @@ static const int DIALOG_CANCEL	= 129;
 	}
 }
 
-- (void)windowDidMove:(NSNotification *)aNotification
-{
-	if (![window isFullScreen]) [window saveFrameUsingName:@"NormalWindow"];
-}
-- (void)windowDidResize:(NSNotification *)aNotification
-{
-	if (![window isFullScreen]) [window saveFrameUsingName:@"NormalWindow"];
-}
 - (void)applicationWillTerminate:(NSNotification *)notification
 {
+	[self endSlideshowActivity];
 	[defaults synchronize];
 }
 - (void)applicationDidBecomeActive:(NSNotification *)aNotification {
@@ -2986,19 +2878,8 @@ static const int DIALOG_CANCEL	= 129;
 {
 	if (openLinkMode==2) return;
 	
-	int result;
-	if (openLinkMode==0) {
-		result = (int)NSRunAlertPanel(NSLocalizedString(@"Open URL",@""),
-									 NSLocalizedString(@"Open '%@' in default browser?",@""),
-									 NSLocalizedString(@"OK",@""), 
-									 NSLocalizedString(@"Cancel",@""), 
-									 nil,
-                                     url);
-	} else {
-		result = NSAlertDefaultReturn;
-	}
-	
-	if(result == NSAlertDefaultReturn || result == NSAlertFirstButtonReturn) {
+	if (openLinkMode != 0 || COConfirmAction(NSLocalizedString(@"Open URL", @""),
+		[NSString stringWithFormat:NSLocalizedString(@"Open '%@' in default browser?", @""), url])) {
 		 [[NSWorkspace sharedWorkspace] openURL:url];
 	}
 }
@@ -3099,153 +2980,26 @@ static const int DIALOG_CANCEL	= 129;
 #pragma mark -
 
 
-#pragma mark Alias
-- (NSString*)pathFromAliasData:(NSData*)data
+#pragma mark File bookmarks
+- (NSString *)pathFromAliasData:(NSData *)data
 {
-	return [self pathFromAlias:[self aliasFromData:data]];
-}
-- (NSData*)aliasDataFromPath:(NSString*)path
-{
-	return [self dataFromAlias:[self aliasFromPath:path]];
-}
-- (AliasHandle)aliasFromPath:(NSString *)fullPath
-{
-    OSStatus	anErr = noErr;
-    FSRef		ref;
-    
-    CFURLRef	tempURL = NULL;
-    Boolean	gotRef = false;
-    
-    tempURL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, (CFStringRef)fullPath,
-                                            kCFURLPOSIXPathStyle, false);
-    
-    if (tempURL == NULL) {
-        return nil;
-    }
-    
-    gotRef = CFURLGetFSRef(tempURL, &ref);
-    
-    CFRelease(tempURL);
-    
-    if (gotRef == false) {
-        return nil;
-    }
-	
-    AliasHandle	alias = NULL;
-    
-    anErr = FSNewAlias(NULL, &ref, &alias);
-    
-    if (anErr != noErr) {
-        return nil;
-    }
-    return alias;
+    return COPathFromStoredBookmark(data);
 }
 
-- (NSData *)dataFromAlias:(AliasHandle)alias
-{	
-	CFDataRef	data = NULL;
-    CFIndex	len;
-    SInt8	handleState;
-    
-    if (alias == NULL) {
-        return NULL;
-    }
-    
-    len = GetHandleSize((Handle)alias);
-    
-    handleState = HGetState((Handle)alias);
-    
-    HLock((Handle)alias);
-    data = CFDataCreate(kCFAllocatorDefault, (const UInt8 *) *alias, len);
-    
-    HSetState((Handle)alias, handleState);
-    
-	DisposeHandle((Handle) alias);
-	
-    return [(NSData*)data autorelease];
-}
-
-
-- (AliasHandle)aliasFromData:(NSData*)data
+- (NSData *)aliasDataFromPath:(NSString *)path
 {
-	CFIndex	len;
-    Handle	handle = NULL;
-    
-    if (data == NULL) {
-        return NULL;
-    }
-    /*
-    len = CFDataGetLength((CFDataRef)data);
-    
-    handle = NewHandle(len);
-    
-    if ((handle != NULL) && (len > 0)) {
-        HLock(handle);
-        //BlockMoveData(CFDataGetBytePtr((CFDataRef)data), *handle, len);
-        memmove((void *)CFDataGetBytePtr((CFDataRef)data), (void *)*handle, len);
-        HUnlock(handle);
-    }
-    */
-    len = CFDataGetLength((CFDataRef)data);
-    
-    PtrToHand(CFDataGetBytePtr((CFDataRef)data), (Handle*)&handle, len);
-    
-    return (AliasHandle)handle;
-}
-- (NSString *)pathFromAlias:(AliasHandle)alias
-{
-    OSStatus	anErr = noErr;
-    FSRef	tempRef;
-    NSString	*result = nil;
-    Boolean	wasChanged;
-    if (alias != NULL) {		
-		
-		anErr = FSResolveAliasWithMountFlags(NULL,alias, &tempRef, &wasChanged, kResolveAliasFileNoUI);
-		
-		if (anErr != noErr) {
-			//return [NSString stringWithFormat:@"file not found"];
-			CFStringRef path = NULL;
-			anErr = FSCopyAliasInfo(alias,NULL, NULL,&path,NULL,NULL);
-			if (anErr != noErr) {
-				result = [[NSString alloc] initWithFormat:@"file not found"];
-			} else if (path) {
-				result = [[NSString alloc] initWithString:(NSString *)path];
-				//NSLog(@"%@",result);
-			} else {
-				result = [[NSString alloc] initWithFormat:@"file not found"];
-			}
-			DisposeHandle((Handle)alias);
-			return [result autorelease];
-		}
-		CFURLRef	tempURL = NULL;
-		CFStringRef	tempResult = NULL;
-		
-		if (&tempRef != NULL) {
-			tempURL = CFURLCreateFromFSRef(kCFAllocatorDefault, &tempRef);
-			if (tempURL == NULL) {
-				//return [NSString stringWithFormat:@"file not found"];
-				CFStringRef path = NULL;
-				anErr = FSCopyAliasInfo(alias,NULL, NULL,&path,NULL,NULL);
-				if (anErr != noErr) {
-					result = [[NSString alloc] initWithFormat:@"file not found"];
-				} else if (path) {
-					result = [[NSString alloc] initWithString:(NSString *)path];
-				} else {
-					result = [[NSString alloc] initWithFormat:@"file not found"];
-				}
-				DisposeHandle((Handle)alias);
-				return [result autorelease];
-			}
-			tempResult = CFURLCopyFileSystemPath(tempURL, kCFURLPOSIXPathStyle);
-			CFRelease(tempURL);
-		}
-		
-        result = (NSString *)tempResult;
-    }
-	DisposeHandle((Handle) alias);
-    return [result autorelease];
+    return COBookmarkDataFromPath(path);
 }
 
+- (void)migrateStoredFileBookmarks
+{
+    for (NSString *key in [NSArray arrayWithObjects:@"BookSettings", @"RecentItems", @"LastPages", nil]) {
+        id collection = [defaults objectForKey:key];
+        BOOL changed = NO;
+        id migrated = COMigrateStoredBookmarksInCollection(collection, &changed);
+        if (changed) [defaults setObject:migrated forKey:key];
+    }
+}
 
 #pragma mark searchFrom
 - (id)searchFromBookSettings:(NSString*)path key:(NSString**)key
@@ -3255,7 +3009,8 @@ static const int DIALOG_CANCEL	= 129;
 		id object;
 		while (object = [enu nextObject]) {
 			if ([[object objectForKey:@"temppath"] isEqualToString:path]) {
-				if ([[self pathFromAliasData:[object objectForKey:@"alias"]] isEqualToString:path]) {
+				NSString *resolved = [self pathFromAliasData:[object objectForKey:@"alias"]];
+				if (!resolved || [resolved isEqualToString:path]) {
 					if (key) {
 						*key = [[[defaults dictionaryForKey:@"BookSettings"] allKeysForObject:object] objectAtIndex:0];
 						//*key = [NSString stringWithString:[[settings allKeysForObject:object] objectAtIndex:0]];
@@ -3293,7 +3048,8 @@ static const int DIALOG_CANCEL	= 129;
 		id object;
 		while (object = [enu nextObject]) {
 			if ([[object objectForKey:@"temppath"] isEqualToString:path]) {
-				if ([[self pathFromAliasData:[object objectForKey:@"alias"]] isEqualToString:path]) {
+				NSString *resolved = [self pathFromAliasData:[object objectForKey:@"alias"]];
+				if (!resolved || [resolved isEqualToString:path]) {
 					if (index) {
 						*index = (int)[[defaults arrayForKey:@"RecentItems"] indexOfObject:object];
 					}
@@ -3333,7 +3089,8 @@ static const int DIALOG_CANCEL	= 129;
 		id object;
 		while (object = [enu nextObject]) {
 			if ([[object objectForKey:@"temppath"] isEqualToString:path]) {
-				if ([[self pathFromAliasData:[object objectForKey:@"alias"]] isEqualToString:path]) {
+				NSString *resolved = [self pathFromAliasData:[object objectForKey:@"alias"]];
+				if (!resolved || [resolved isEqualToString:path]) {
 					if (index) {
 						*index = (int)[[defaults arrayForKey:@"LastPages"] indexOfObject:object];
 					}
@@ -3378,17 +3135,11 @@ static const int DIALOG_CANCEL	= 129;
 		id tempKey;
 		
 		while (tempKey = [enuS nextObject]) {
-			temp = [self pathFromAliasData:[[newDic objectForKey:tempKey] objectForKey:@"alias"]];
+			temp = COPathFromStoredEntry([newDic objectForKey:tempKey]);
 			if ([[temp lastPathComponent] isEqualToString:[path lastPathComponent]] && ![[NSFileManager defaultManager] fileExistsAtPath:temp]) {
 				
-				int result = (int)NSRunAlertPanel(NSLocalizedString(@"Setting is not found",@""),
-											 NSLocalizedString(@"Setting of %@ is not found.\nDo you want to use a setting of %@ ?",@""),
-											 NSLocalizedString(@"OK",@""), 
-											 NSLocalizedString(@"Cancel",@""), 
-											 nil,
-                                             path,temp);
-				
-				if(result == NSAlertDefaultReturn || result == NSAlertFirstButtonReturn) {
+				if (COConfirmAction(NSLocalizedString(@"Setting is not found", @""),
+					[NSString stringWithFormat:NSLocalizedString(@"Setting of %@ is not found.\nDo you want to use a setting of %@ ?", @""), path, temp])) {
 					/*LastPagesの修正*/
 					int lastPagesIndex;
 					id lastPage = [self searchFromLastPages:temp index:&lastPagesIndex];
@@ -3465,24 +3216,15 @@ static const int DIALOG_CANCEL	= 129;
 		BOOL updateMenu = NO;
 		if (![oldSuperPath isEqualToString:superPath]) {
 			
-			int result;
-			if (changeCurrentFolderMode==0) {
-				result = (int)NSRunAlertPanel(NSLocalizedString(@"Change current folder",@""),
-											 NSLocalizedString(@"The current opening book was moved. Are you sure you want to change current folder?",@""),
-											 NSLocalizedString(@"OK",@""), 
-											 NSLocalizedString(@"Cancel",@""), 
-											 nil);
-			} else {
-				result = NSAlertDefaultReturn;
-			}
-			
-			if(result == NSAlertDefaultReturn || result == NSAlertFirstButtonReturn) {
+			if (changeCurrentFolderMode != 0 ||
+				COConfirmAction(NSLocalizedString(@"Change current folder", @""),
+					NSLocalizedString(@"The current opening book was moved. Are you sure you want to change current folder?", @""))) {
 				updateMenu = YES;
 			} else {
 				NSEnumerator *enumerator = [[[openSameFolderMenuItem submenu] itemArray] objectEnumerator];
 				id object;
 				while (object = [enumerator nextObject]) {
-					if ([object state] == NSOnState){
+					if ([object state] == NSControlStateValueOn){
 						[object setEnabled:NO];
 						break;
 					}

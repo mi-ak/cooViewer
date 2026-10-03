@@ -2,6 +2,7 @@
 #import "COImageLoader.h"
 #import "Controller.h"
 #import "ThumbnailMatrix.h"
+#import "NSString_Compare.h"
 
 
 @implementation ThumbnailController
@@ -9,10 +10,10 @@
 - (void)awakeFromNib
 {
 	bookmarkMode = [[NSUserDefaults standardUserDefaults] boolForKey:@"ThumbnailOnlyBookmark"];	
-	if (bookmarkMode) [onlyBookmarkButton setState:NSOnState];
+	if (bookmarkMode) [onlyBookmarkButton setState:NSControlStateValueOn];
 	
 	mangaMode = [[NSUserDefaults standardUserDefaults] boolForKey:@"ThumbnailComicMode"];
-	if (mangaMode) [comicModeButton setState:NSOnState];
+	if (mangaMode) [comicModeButton setState:NSControlStateValueOn];
 	
 	
 	doCount = 0;
@@ -137,7 +138,7 @@
 	[[NSGraphicsContext currentContext] setImageInterpolation:NSImageInterpolationLow];
     [image drawInRect:NSMakeRect(0,0,(int)newWidth,(int)newHeight)
              fromRect:NSMakeRect(0, 0, [image size].width, [image size].height)
-            operation:NSCompositeSourceOver fraction:1.0];
+            operation:NSCompositingOperationSourceOver fraction:1.0];
 	
 	/*
 	if (b) {
@@ -165,7 +166,7 @@
 		
 		[image drawInRect:rect
 				 fromRect:NSMakeRect(0,0,[image size].width,[image size].height)
-				operation:NSCompositeSourceOver
+				operation:NSCompositingOperationSourceOver
 				 fraction:1.0];
 	}*/
 	
@@ -246,17 +247,17 @@
 				if ([controller readMode] == 1) {
                     [image drawInRect:NSMakeRect(0,(int)center1,(int)widthValue1,(int)heightValue1)
                              fromRect:NSMakeRect(0, 0, [image size].width, [image size].height)
-                            operation:NSCompositeSourceOver fraction:1.0];
+                            operation:NSCompositingOperationSourceOver fraction:1.0];
                     [image2 drawInRect:NSMakeRect((int)widthValue1,(int)center2,(int)widthValue2,(int)heightValue2)
                               fromRect:NSMakeRect(0, 0, [image2 size].width, [image2 size].height)
-                             operation:NSCompositeSourceOver fraction:1.0];
+                             operation:NSCompositingOperationSourceOver fraction:1.0];
 				} else if ([controller readMode] == 0) {
                     [image2 drawInRect:NSMakeRect(0,(int)center2,(int)widthValue2,(int)heightValue2)
                              fromRect:NSMakeRect(0, 0, [image2 size].width, [image2 size].height)
-                            operation:NSCompositeSourceOver fraction:1.0];
+                            operation:NSCompositingOperationSourceOver fraction:1.0];
                     [image drawInRect:NSMakeRect((int)widthValue2,(int)center1,(int)widthValue1,(int)heightValue1)
                               fromRect:NSMakeRect(0, 0, [image size].width, [image size].height)
-                             operation:NSCompositeSourceOver fraction:1.0];
+                             operation:NSCompositingOperationSourceOver fraction:1.0];
 				}
 				[ newImage unlockFocus ];
 				[image release];
@@ -338,17 +339,17 @@
 				if ([controller readMode] == 1) {
                     [ image2 drawInRect:NSMakeRect(0,(int)center2,(int)widthValue2,(int)heightValue2)
                                fromRect:NSMakeRect(0, 0, [image2 size].width, [image2 size].height)
-                              operation:NSCompositeSourceOver fraction:1.0];
+                              operation:NSCompositingOperationSourceOver fraction:1.0];
                     [ image drawInRect:NSMakeRect((int)widthValue2,(int)center1,(int)widthValue1,(int)heightValue1)
                               fromRect:NSMakeRect(0, 0, [image size].width, [image size].height)
-                             operation:NSCompositeSourceOver fraction:1.0];
+                             operation:NSCompositingOperationSourceOver fraction:1.0];
 				} else if ([controller readMode] == 0) {
                     [image drawInRect:NSMakeRect(0,(int)center1,(int)widthValue1,(int)heightValue1)
                              fromRect:NSMakeRect(0, 0, [image size].width, [image size].height)
-                            operation:NSCompositeSourceOver fraction:1.0];
+                            operation:NSCompositingOperationSourceOver fraction:1.0];
                     [image2 drawInRect:NSMakeRect((int)widthValue1,(int)center2,(int)widthValue2,(int)heightValue2)
                               fromRect:NSMakeRect(0, 0, [image2 size].width, [image2 size].height)
-                             operation:NSCompositeSourceOver fraction:1.0];
+                             operation:NSCompositingOperationSourceOver fraction:1.0];
 				}
 				[ newImage unlockFocus ];
 				[image release];
@@ -1222,77 +1223,6 @@
 
 
 
--(void)appleRemoteAction:(NSString*)characters
-{
-    unichar character = [characters characterAtIndex:0];
-	int cMod = 100;
-	NSEnumerator *enu = [keyArray objectEnumerator];
-	id dic;
-	while (dic = [enu nextObject]) {
-		if (character == [[dic objectForKey:@"key"] characterAtIndex:0] && cMod == [[dic objectForKey:@"modifier"] intValue]){
-			int action = [[dic objectForKey:@"action"] intValue];
-			if ([[dic objectForKey:@"switchAction"] boolValue] == YES && [controller readFromLeft]) {
-				switch (action) {
-					case 0: action=1; break;
-					case 1: action=0; break;
-					case 2: action=3; break;
-					case 3: action=2; break;
-					case 4: action=5; break;
-					case 5: action=4; break;
-					case 6: action=7; break;
-					case 7: action=6; break;
-					case 8: action=9; break;
-					case 9: action=8; break;
-					case 13: action=14; break;
-					case 14: action=13; break;
-					case 26: action=27; break;
-					case 27: action=26; break;
-					case 35: action=36; break;
-					case 36: action=35; break;
-					default:
-						break;
-				}
-			}
-			switch (action) {
-				case 0:
-					[self next:self];
-					break;
-				case 1:
-					[self prev:self];
-					break;
-				case 4:
-					[controller goToLast];
-					[self showThumbnail:[controller nowPage]];
-					break;
-				case 5:
-					[controller goToFirst];
-					[self showThumbnail:[controller nowPage]];
-					break;
-				case 35:
-					[controller nextSubFolder];
-					[self showThumbnail:[controller nowPage]];
-					break;
-				case 36:
-					[controller prevSubFolder];
-					[self showThumbnail:[controller nowPage]];
-					break;
-				case 8:
-					[controller nextFolder];
-					break;
-				case 9:
-					[controller backFolder];
-					break;
-				case 18: case 46:
-					[panel performClose:self];
-					break;
-				default:
-					break;
-			}
-			return;
-		}
-	}
-}
-
 -(void)action:(NSEvent*)event
 {
 	NSString *string = [event charactersIgnoringModifiers];
@@ -1327,9 +1257,9 @@
 		id dic;
 		
 		unsigned int cMod = 0;
-		BOOL shift = ([event modifierFlags] & NSShiftKeyMask) ? YES : NO;
-		BOOL option = ([event modifierFlags] & NSAlternateKeyMask) ? YES : NO;
-		BOOL control = ([event modifierFlags] & NSControlKeyMask) ? YES : NO;
+		BOOL shift = ([event modifierFlags] & NSEventModifierFlagShift) ? YES : NO;
+		BOOL option = ([event modifierFlags] & NSEventModifierFlagOption) ? YES : NO;
+		BOOL control = ([event modifierFlags] & NSEventModifierFlagControl) ? YES : NO;
 		
 		if (shift) cMod += 1;
 		if (option) cMod += 2;
@@ -1464,7 +1394,7 @@
 
 -(IBAction)onlyBookmark:(id)sender
 {
-	if ([sender state] == NSOnState) {
+	if ([sender state] == NSControlStateValueOn) {
 		bookmarkMode = YES;
 		[self showBookmarkThumbnail];
 	} else {
@@ -1475,7 +1405,7 @@
 }
 -(IBAction)comicMode:(id)sender
 {
-	if ([sender state] == NSOnState) {
+	if ([sender state] == NSControlStateValueOn) {
 		mangaMode = YES;
 		[self showThumbnail:[controller nowPage]];
 	} else {

@@ -6256,23 +6256,23 @@ p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; color: #000000}
 </TextItem>
 
 <TextItem>
-<Description> Class = &quot;NSTabViewItem&quot;; label = &quot;Keyboard &amp; AppleRemote&quot;; ObjectID = &quot;2067&quot;; </Description>
+<Description> Class = &quot;NSTabViewItem&quot;; label = &quot;Keyboard&quot;; ObjectID = &quot;2067&quot;; </Description>
 <Position>2067.label</Position>
 <TranslationSet>
 
-	<base loc="en"                            >Keyboard &amp; AppleRemote</base>
-	<tran loc="ja" origin="OldLoc exact match">キーボード &amp; AppleRemote</tran>
+	<base loc="en"                            >Keyboard</base>
+	<tran loc="ja" origin="OldLoc exact match">キーボード</tran>
 
 </TranslationSet>
 </TextItem>
 
 <TextItem>
-<Description> NSTabViewItem : &lt;title:Keyboard &amp; AppleRemote&gt; (oid:2067) </Description>
+<Description> NSTabViewItem : &lt;title:Keyboard&gt; (oid:2067) </Description>
 <Position>2067</Position>
 <TranslationSet>
 
-	<base loc="en"                            >Keyboard &amp; AppleRemote</base>
-	<tran loc="ja" origin="OldLoc exact match">キーボード &amp; AppleRemote</tran>
+	<base loc="en"                            >Keyboard</base>
+	<tran loc="ja" origin="OldLoc exact match">キーボード</tran>
 
 </TranslationSet>
 </TextItem>

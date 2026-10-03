@@ -5,6 +5,7 @@
 -(void)awakeFromNib
 {
 	[self setAcceptsMouseMovedEvents:YES];
+	[self setCollectionBehavior:[self collectionBehavior] | NSWindowCollectionBehaviorFullScreenAuxiliary];
 	[self makeFirstResponder:matrix];
 }
 
@@ -24,12 +25,6 @@
 	NSLog(@"kita0");
 }
 */
--(void)becomeKeyWindow
-{
-	[super becomeKeyWindow];
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DontHideMenuBar"] == NO) [NSMenu setMenuBarVisible:NO];
-}
-
 -(void)resignKeyWindow
 {
 	//[self performClose:self];
@@ -39,15 +34,8 @@
 
 -(NSRect)constrainFrameRect:(NSRect)frameRect toScreen:(NSScreen *)aScreen
 {
-	if ([NSMenu menuBarVisible]) {
-		NSRect result = [[NSScreen mainScreen] frame];
-		result.size.height -= 6;
-		return result;
-	}
-	//NSRect result = [[NSScreen mainScreen] frame];
-	NSRect result=[super constrainFrameRect:[[NSScreen mainScreen] frame] toScreen:aScreen];
-	result.size.height+= 16;
-	return result;
+	NSScreen *screen = aScreen ?: [NSScreen mainScreen];
+	return [super constrainFrameRect:[screen visibleFrame] toScreen:screen];
 }
 
 
@@ -60,7 +48,7 @@
 
 - (void)sendEvent:(NSEvent *)theEvent
 {
-	if ([theEvent type] == NSKeyDown) {
+	if ([theEvent type] == NSEventTypeKeyDown) {
 		[target performSelector:@selector(action:) withObject:theEvent];
 	} else {
 		[super sendEvent:theEvent];

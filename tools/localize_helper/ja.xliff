@@ -816,9 +816,9 @@
         <note>Class = "NSBox"; title = "View"; ObjectID = "2037";</note>
       </trans-unit>
       <trans-unit id="2067.label" xml:space="preserve">
-        <source>Keyboard &amp; AppleRemote</source>
-        <target>キーボード &amp; AppleRemote</target>
-        <note>Class = "NSTabViewItem"; label = "Keyboard &amp; AppleRemote"; ObjectID = "2067";</note>
+        <source>Keyboard</source>
+        <target>キーボード</target>
+        <note>Class = "NSTabViewItem"; label = "Keyboard"; ObjectID = "2067";</note>
       </trans-unit>
       <trans-unit id="2068.label" xml:space="preserve">
         <source>Mouse</source>
@@ -2041,11 +2041,6 @@ when the currently open book was moved:</source>
         <source>Fit original size window to image size</source>
         <target>実寸表示ウィンドウのサイズを内容に合わせる</target>
         <note>Class = "NSButtonCell"; title = "Fit original size window to image size"; ObjectID = "4315";</note>
-      </trans-unit>
-      <trans-unit id="4316.title" xml:space="preserve">
-        <source>Don't hide menu bar</source>
-        <target>メニューバーを隠さない</target>
-        <note>Class = "NSButtonCell"; title = "Don't hide menu bar"; ObjectID = "4316";</note>
       </trans-unit>
       <trans-unit id="4317.title" xml:space="preserve">
         <source>Show thumbnail view on open</source>

@@ -5,7 +5,7 @@
 - (void)windowDidResignKey:(NSNotification *)aNotification
 {
 	[[aNotification object] orderOut:self];
-	[self changeColor:[aNotification object]];
+	[self colorDidChange:[aNotification object]];
 }
 
 - (void)setCurrentColor:(NSColor*)aColor
@@ -42,7 +42,7 @@
 {
 	return currentColor;
 }
-- (void)changeColor:(id)sender
+- (void)colorDidChange:(id)sender
 {
 	[currentColor autorelease];
 	currentColor = [[sender color] retain];

@@ -1,5 +1,5 @@
+#import "COArchivedSettings.h"
 #import "PreferenceController.h"
-#import "RemoteControl.h"
 #import "COColorPopUpButton.h"
 #import "Controller.h"
 #import "AccessorySettingView.h"
@@ -11,14 +11,27 @@
 static const int DIALOG_OK		= 128;
 static const int DIALOG_CANCEL	= 129;
 
++ (void)removeLegacyRemoteBindings
+{
+	NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+	for (NSString *key in @[@"KeyArray", @"KeyArrayMode2", @"KeyArrayMode3"]) {
+		NSArray *bindings = [userDefaults arrayForKey:key];
+		if (!bindings) continue;
+		NSMutableArray *supportedBindings = [NSMutableArray arrayWithCapacity:[bindings count]];
+		for (NSDictionary *binding in bindings) {
+			// Modifier 100 was reserved for Apple Remote buttons, which are no longer handled.
+			if ([[binding objectForKey:@"modifier"] integerValue] != 100) {
+				[supportedBindings addObject:binding];
+			}
+		}
+		if ([supportedBindings count] != [bindings count]) {
+			[userDefaults setObject:supportedBindings forKey:key];
+		}
+	}
+}
+
 + (NSArray*)defaultKeyArray
 {
-	unichar plus = kRemoteButtonPlus;
-	unichar minus = kRemoteButtonMinus;
-	unichar menu = kRemoteButtonMenu;
-	unichar play = kRemoteButtonPlay;
-	unichar right = kRemoteButtonRight;
-	unichar left = kRemoteButtonLeft;
 	return [NSMutableArray arrayWithObjects:
 			[NSDictionary dictionaryWithObjectsAndKeys:
 				[NSNumber numberWithInt:0],@"action",
@@ -286,39 +299,6 @@ static const int DIALOG_CANCEL	= 129;
 				[NSNumber numberWithInt:0],@"modifier",
 				[NSNumber numberWithInt:90],@"value",
 				nil],			
-			
-			[NSDictionary dictionaryWithObjectsAndKeys:
-				[NSNumber numberWithInt:7],@"action",
-				@"AppleRemote Volume up",@"keyname", [NSString stringWithCharacters:&plus length:1],@"key",
-				[NSNumber numberWithInt:100],@"modifier",
-				nil],
-			[NSDictionary dictionaryWithObjectsAndKeys:
-				[NSNumber numberWithInt:6],@"action",
-				@"AppleRemote Volume down",@"keyname", [NSString stringWithCharacters:&minus length:1],@"key",
-				[NSNumber numberWithInt:100],@"modifier",
-				nil],
-			[NSDictionary dictionaryWithObjectsAndKeys:
-				[NSNumber numberWithInt:18],@"action",
-				@"AppleRemote Menu",@"keyname", [NSString stringWithCharacters:&menu length:1],@"key",
-				[NSNumber numberWithInt:100],@"modifier",
-				nil],
-			[NSDictionary dictionaryWithObjectsAndKeys:
-				[NSNumber numberWithInt:17],@"action",
-				@"AppleRemote Play",@"keyname", [NSString stringWithCharacters:&play length:1],@"key",
-				[NSNumber numberWithInt:100],@"modifier",
-				nil],
-			[NSDictionary dictionaryWithObjectsAndKeys:
-				[NSNumber numberWithInt:1],@"action",
-				@"AppleRemote Right",@"keyname", [NSString stringWithCharacters:&right length:1],@"key",
-				[NSNumber numberWithInt:100],@"modifier",
-				[NSNumber numberWithBool:YES],@"switchAction",
-				nil],
-			[NSDictionary dictionaryWithObjectsAndKeys:
-				[NSNumber numberWithInt:0],@"action",
-				@"AppleRemote Left",@"keyname", [NSString stringWithCharacters:&left length:1],@"key",
-				[NSNumber numberWithInt:100],@"modifier",
-				[NSNumber numberWithBool:YES],@"switchAction",
-				nil],
 			
 			[NSDictionary dictionaryWithObjectsAndKeys:
 				[NSNumber numberWithInt:35],@"action",
@@ -605,7 +585,7 @@ static const int DIALOG_CANCEL	= 129;
 	defaults = [NSUserDefaults standardUserDefaults];
 	[keyPanelTextView setTarget:self];
     [keyPanelTextView setAction:@selector(keyConfigAction:)];
-	[keyPanelTextView setAlignment:NSCenterTextAlignment];
+	[keyPanelTextView setAlignment:NSTextAlignmentCenter];
 	
 	NSRect oldFrame = [preferences frame];
 	NSRect newFrame = oldFrame;
@@ -971,42 +951,31 @@ static const int DIALOG_CANCEL	= 129;
 	
 	
 	if ([defaults boolForKey:@"ShowNumber"]) {
-		[showPageNumCheck setState:NSOnState];
+		[showPageNumCheck setState:NSControlStateValueOn];
 	} else {
-		[showPageNumCheck setState:NSOffState];
+		[showPageNumCheck setState:NSControlStateValueOff];
 	}
 	if ([defaults boolForKey:@"ShowPageBar"]) {
-		[showPageBarCheck setState:NSOnState];
+		[showPageBarCheck setState:NSControlStateValueOn];
 	} else {
-		[showPageBarCheck setState:NSOffState];
+		[showPageBarCheck setState:NSControlStateValueOff];
 	}
 	
 	if ([defaults boolForKey:@"PageNumAutoHide"]) {
-		[pageNumAutoHideCheck setState:NSOnState];
+		[pageNumAutoHideCheck setState:NSControlStateValueOn];
 	} else {
-		[pageNumAutoHideCheck setState:NSOffState];
+		[pageNumAutoHideCheck setState:NSControlStateValueOff];
 	}
 	if ([defaults boolForKey:@"PageBarAutoHide"]) {
-		[pageBarAutoHideCheck setState:NSOnState];
+		[pageBarAutoHideCheck setState:NSControlStateValueOn];
 	} else {
-		[pageBarAutoHideCheck setState:NSOffState];
+		[pageBarAutoHideCheck setState:NSControlStateValueOff];
 	}
 	if ([defaults boolForKey:@"PageBarShowThumbnail"]) {
-		[pageBarShowThumbCheck setState:NSOnState];
+		[pageBarShowThumbCheck setState:NSControlStateValueOn];
 	} else {
-		[pageBarShowThumbCheck setState:NSOffState];
+		[pageBarShowThumbCheck setState:NSControlStateValueOff];
 	}
-	if ([defaults boolForKey:@"ChangeOpenWith"]) {
-		[changeOpenWithCheck setState:NSOnState];
-	} else {
-		[changeOpenWithCheck setState:NSOffState];
-	}
-	if ([defaults boolForKey:@"ChangeCreator"]) {
-		[changeCreatorCheck setState:NSOnState];
-	} else {
-		[changeCreatorCheck setState:NSOffState];
-	}
-	
 	switch ([defaults integerForKey:@"SortMode"]) {
 		case 0:
 			[sortModePopUpButton selectItemAtIndex:0];
@@ -1025,22 +994,17 @@ static const int DIALOG_CANCEL	= 129;
 			break;
 	}
 	
-	if ([defaults boolForKey:@"DontHideMenuBar"]) {
-		[dontHideMenubarCheck setState:NSOnState];
-	} else {
-		[dontHideMenubarCheck setState:NSOffState];
-	}
 	if ([defaults boolForKey:@"ShowThumbnailWhenOpen"]) {
-		[showThumbnailCheck setState:NSOnState];
+		[showThumbnailCheck setState:NSControlStateValueOn];
 	} else {
-		[showThumbnailCheck setState:NSOffState];
+		[showThumbnailCheck setState:NSControlStateValueOff];
 	}
 	
 	/*history*/
 	if ([defaults boolForKey:@"AlwaysRememberLastPage"]) {
-		[alwaysRememberLastCheck setState:NSOnState];
+		[alwaysRememberLastCheck setState:NSControlStateValueOn];
 	} else {
-		[alwaysRememberLastCheck setState:NSOffState];
+		[alwaysRememberLastCheck setState:NSControlStateValueOff];
 	}
 	
 	[goToLastPopUpButton selectItemAtIndex:[defaults integerForKey:@"GoToLastPage"]];
@@ -1059,7 +1023,7 @@ static const int DIALOG_CANCEL	= 129;
 	/*pageBar*/
 	NSColor *pageBarBG;
 	if ([defaults objectForKey:@"PageBarBGColor"]) {
-		pageBarBG = [NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"PageBarBGColor"]];
+		pageBarBG = COReadArchivedSetting(defaults, @"PageBarBGColor", [NSColor class]);
 	} else {
 		pageBarBG = [[NSColor blackColor] colorWithAlphaComponent:0.8];
 	}
@@ -1067,28 +1031,28 @@ static const int DIALOG_CANCEL	= 129;
 	[pageBarFontTextField setBackgroundColor:pageBarBG];
 	NSColor *pageBarBorder;
 	if ([defaults objectForKey:@"PageBarBorderColor"]) {
-		pageBarBorder = [NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"PageBarBorderColor"]];
+		pageBarBorder = COReadArchivedSetting(defaults, @"PageBarBorderColor", [NSColor class]);
 	} else {
 		pageBarBorder = [NSColor whiteColor];
 	}
 	[pageBarBorderColor setCurrentColor:pageBarBorder];
 	NSColor *pageBarReaded;
 	if ([defaults objectForKey:@"PageBarReadedColor"]) {
-		pageBarReaded = [NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"PageBarReadedColor"]];
+		pageBarReaded = COReadArchivedSetting(defaults, @"PageBarReadedColor", [NSColor class]);
 	} else {
 		pageBarReaded = [[NSColor whiteColor] colorWithAlphaComponent:0.5];
 	}
 	[pageBarReadedColor setCurrentColor:pageBarReaded];
 	NSColor *pageBarFont;
 	if ([defaults objectForKey:@"PageBarFontColor"]) {
-		pageBarFont = [NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"PageBarFontColor"]];
+		pageBarFont = COReadArchivedSetting(defaults, @"PageBarFontColor", [NSColor class]);
 	} else {
 		pageBarFont = [NSColor whiteColor];
 	}
 	[pageBarFontColor setCurrentColor:pageBarFont];
 	[pageBarFontTextField setTextColor:pageBarFont];
 	if ([defaults objectForKey:@"PageBarTextFont"]) {
-		[pageBarFontTextField setFont:[NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"PageBarTextFont"]]];
+		[pageBarFontTextField setFont:COReadArchivedSetting(defaults, @"PageBarTextFont", [NSFont class])];
 	} else {
 		[pageBarFontTextField setFont:[NSFont userFontOfSize:14]];
 	}
@@ -1101,7 +1065,7 @@ static const int DIALOG_CANCEL	= 129;
 	/*view*/
 	NSColor *viewBackGround;
 	if ([defaults objectForKey:@"ViewBackGroundColor"]) {
-		viewBackGround = [NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"ViewBackGroundColor"]];
+		viewBackGround = COReadArchivedSetting(defaults, @"ViewBackGroundColor", [NSColor class]);
 	} else {
 		viewBackGround = [NSColor blackColor];
 	}
@@ -1128,7 +1092,7 @@ static const int DIALOG_CANCEL	= 129;
 	
 	/*pagenumber*/
 	if ([defaults objectForKey:@"TextFont"]) {
-		[fontTextField setFont:[NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"TextFont"]]];
+		[fontTextField setFont:COReadArchivedSetting(defaults, @"TextFont", [NSFont class])];
 	} else {
 		[fontTextField setFont:[fontTextField font]];
 	}
@@ -1136,7 +1100,7 @@ static const int DIALOG_CANCEL	= 129;
 	
 	NSColor *textColor;
 	if ([defaults objectForKey:@"TextColor"]) {
-		textColor = [NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"TextColor"]];
+		textColor = COReadArchivedSetting(defaults, @"TextColor", [NSColor class]);
 	} else {
 		textColor = [NSColor whiteColor];
 	}
@@ -1144,7 +1108,7 @@ static const int DIALOG_CANCEL	= 129;
 	[fontTextField setTextColor:textColor];
 	NSColor *textBGColor;
 	if ([defaults objectForKey:@"TextBGColor"]) {
-		textBGColor = [NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"TextBGColor"]];
+		textBGColor = COReadArchivedSetting(defaults, @"TextBGColor", [NSColor class]);
 	} else {
 		textBGColor = [[NSColor blackColor] colorWithAlphaComponent:0.8];
 	}
@@ -1152,7 +1116,7 @@ static const int DIALOG_CANCEL	= 129;
 	[fontTextField setBackgroundColor:textBGColor];
 	NSColor *textBorderColor;
 	if ([defaults objectForKey:@"TextBorderColor"]) {
-		textBorderColor = [NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"TextBorderColor"]];
+		textBorderColor = COReadArchivedSetting(defaults, @"TextBorderColor", [NSColor class]);
 	} else {
 		textBorderColor = [NSColor whiteColor];
 	}
@@ -1170,9 +1134,9 @@ static const int DIALOG_CANCEL	= 129;
 	}
 	
 	if (fitOriginal) {
-		[fitOriginalCheck setState:NSOnState];
+		[fitOriginalCheck setState:NSControlStateValueOn];
 	} else {
-		[fitOriginalCheck setState:NSOffState];
+		[fitOriginalCheck setState:NSControlStateValueOff];
 	}
 	
 	
@@ -1187,25 +1151,25 @@ static const int DIALOG_CANCEL	= 129;
 
 	
 	if (rememberBookSettings) {
-		[rememberBookSettingsCheck setState:NSOnState];
+		[rememberBookSettingsCheck setState:NSControlStateValueOn];
 	} else {
-		[rememberBookSettingsCheck setState:NSOffState];
+		[rememberBookSettingsCheck setState:NSControlStateValueOff];
 	}
 	
 	
 	
 	
 	if (openLastFolder == YES) {
-		[openLastFolderCheck setState:NSOnState];
+		[openLastFolderCheck setState:NSControlStateValueOn];
 	} else {
-		[openLastFolderCheck setState:NSOffState];
+		[openLastFolderCheck setState:NSControlStateValueOff];
 	}
     
     
     if (useCalayer == YES) {
-        [useCalayerCheck setState:NSOnState];
+        [useCalayerCheck setState:NSControlStateValueOn];
     } else {
-        [useCalayerCheck setState:NSOffState];
+        [useCalayerCheck setState:NSControlStateValueOff];
     }
 	
 	
@@ -1219,9 +1183,9 @@ static const int DIALOG_CANCEL	= 129;
 	
 	
 	if (readSubFolder == YES) {
-		[readSubFolderCheck setState:NSOnState];
+		[readSubFolderCheck setState:NSControlStateValueOn];
 	} else {
-		[readSubFolderCheck setState:NSOffState];
+		[readSubFolderCheck setState:NSControlStateValueOff];
 	}
 	
 	
@@ -1242,24 +1206,24 @@ static const int DIALOG_CANCEL	= 129;
 	
 	switch ([defaults integerForKey:@"ReadMode"]) {
 		case 0:
-			[readRightButton setState:NSOffState];
-			[readLeftButton setState:NSOnState];
-			[readSingleCheckButton setState:NSOffState];
+			[readRightButton setState:NSControlStateValueOff];
+			[readLeftButton setState:NSControlStateValueOn];
+			[readSingleCheckButton setState:NSControlStateValueOff];
 			break;
 		case 1:
-			[readRightButton setState:NSOnState];
-			[readLeftButton setState:NSOffState];
-			[readSingleCheckButton setState:NSOffState];
+			[readRightButton setState:NSControlStateValueOn];
+			[readLeftButton setState:NSControlStateValueOff];
+			[readSingleCheckButton setState:NSControlStateValueOff];
 			break;
 		case 2:
-			[readRightButton setState:NSOffState];
-			[readLeftButton setState:NSOnState];
-			[readSingleCheckButton setState:NSOnState];
+			[readRightButton setState:NSControlStateValueOff];
+			[readLeftButton setState:NSControlStateValueOn];
+			[readSingleCheckButton setState:NSControlStateValueOn];
 			break;
 		case 3:
-			[readRightButton setState:NSOnState];
-			[readLeftButton setState:NSOffState];
-			[readSingleCheckButton setState:NSOnState];
+			[readRightButton setState:NSControlStateValueOn];
+			[readLeftButton setState:NSControlStateValueOff];
+			[readSingleCheckButton setState:NSControlStateValueOn];
 			break;
 		default:break;
 	}
@@ -1305,7 +1269,7 @@ static const int DIALOG_CANCEL	= 129;
 		currentMouseArray = nil;
         return;
     } else if(result == DIALOG_OK) {
-		if ([fitOriginalCheck state] == NSOnState) {
+		if ([fitOriginalCheck state] == NSControlStateValueOn) {
 			fitOriginal = YES;
 		} else {
 			fitOriginal = NO;
@@ -1333,7 +1297,7 @@ static const int DIALOG_CANCEL	= 129;
 		[accessorySettingView pageMargin];
 		*/
 		
-		if ([rememberBookSettingsCheck state] == NSOnState) {
+		if ([rememberBookSettingsCheck state] == NSControlStateValueOn) {
 			rememberBookSettings = YES;
 		} else {
 			rememberBookSettings = NO;
@@ -1343,21 +1307,21 @@ static const int DIALOG_CANCEL	= 129;
 		[defaults setBool:rememberBookSettings forKey:@"RememberBookSettings"];
 		
 		
-		if ([openLastFolderCheck state] == NSOnState) {
+		if ([openLastFolderCheck state] == NSControlStateValueOn) {
 			openLastFolder = YES;
 		} else {
 			openLastFolder = NO;
 		}
 		[defaults setBool:openLastFolder forKey:@"OpenLastFolder"];
 		
-		if ([readSubFolderCheck state] == NSOnState) {
+		if ([readSubFolderCheck state] == NSControlStateValueOn) {
 			readSubFolder = YES;
 		} else {
 			readSubFolder = NO;
 		}
 		[defaults setBool:readSubFolder forKey:@"ReadSubFolder"];
         
-        if ([useCalayerCheck state] == NSOnState) {
+        if ([useCalayerCheck state] == NSControlStateValueOn) {
             useCalayer = YES;
         } else {
             useCalayer = NO;
@@ -1379,14 +1343,14 @@ static const int DIALOG_CANCEL	= 129;
 		
 		
 		int readMode;
-		if ([readLeftButton state] == NSOnState) {
-			if ([readSingleCheckButton state] == NSOnState) {
+		if ([readLeftButton state] == NSControlStateValueOn) {
+			if ([readSingleCheckButton state] == NSControlStateValueOn) {
 				readMode = 2;
 			} else {
 				readMode = 0;
 			}
-		} else /*if ([readRightButton state] == NSOnState)*/ {
-			if ([readSingleCheckButton state] == NSOnState) {
+		} else /*if ([readRightButton state] == NSControlStateValueOn)*/ {
+			if ([readSingleCheckButton state] == NSControlStateValueOn) {
 				readMode = 3;
 			} else {
 				readMode = 1;
@@ -1456,11 +1420,11 @@ static const int DIALOG_CANCEL	= 129;
 		/*pageNum*/
 		[defaults setInteger:[accessorySettingView pageNumPosition] forKey:@"PageNumPosition"];
 		[defaults setObject:[accessorySettingView pageMargin] forKey:@"Margin_Page"];
-		[defaults setObject:[NSArchiver archivedDataWithRootObject:[fontTextField font]] forKey:@"TextFont"];
-		[defaults setObject:[NSArchiver archivedDataWithRootObject:[pageColor currentColor]] forKey:@"TextColor"];
-		[defaults setObject:[NSArchiver archivedDataWithRootObject:[pageBGColor currentColor]] forKey:@"TextBGColor"];
-		[defaults setObject:[NSArchiver archivedDataWithRootObject:[pageBorderColor currentColor]] forKey:@"TextBorderColor"];
-		if ([showPageNumCheck state]==NSOnState) {
+		COWriteArchivedSetting(defaults, @"TextFont", [fontTextField font]);
+		COWriteArchivedSetting(defaults, @"TextColor", [pageColor currentColor]);
+		COWriteArchivedSetting(defaults, @"TextBGColor", [pageBGColor currentColor]);
+		COWriteArchivedSetting(defaults, @"TextBorderColor", [pageBorderColor currentColor]);
+		if ([showPageNumCheck state]==NSControlStateValueOn) {
 			[defaults setBool:YES forKey:@"ShowNumber"];
 		} else {
 			[defaults setBool:NO forKey:@"ShowNumber"];
@@ -1470,12 +1434,12 @@ static const int DIALOG_CANCEL	= 129;
 		[defaults setInteger:[accessorySettingView pageBarPosition] forKey:@"PageBarPosition"];
 		[defaults setObject:[accessorySettingView pageBarMargin] forKey:@"Margin_PageBar"];
 		[defaults setObject:[accessorySettingView pageBarSize] forKey:@"PageBarSize"];
-		[defaults setObject:[NSArchiver archivedDataWithRootObject:[pageBarBGColor currentColor]] forKey:@"PageBarBGColor"];
-		[defaults setObject:[NSArchiver archivedDataWithRootObject:[pageBarBorderColor currentColor]] forKey:@"PageBarBorderColor"];
-		[defaults setObject:[NSArchiver archivedDataWithRootObject:[pageBarReadedColor currentColor]] forKey:@"PageBarReadedColor"];
-		[defaults setObject:[NSArchiver archivedDataWithRootObject:[pageBarFontColor currentColor]] forKey:@"PageBarFontColor"];
-		[defaults setObject:[NSArchiver archivedDataWithRootObject:[pageBarFontTextField font]] forKey:@"PageBarTextFont"];		
-		if ([showPageBarCheck state]==NSOnState) {
+		COWriteArchivedSetting(defaults, @"PageBarBGColor", [pageBarBGColor currentColor]);
+		COWriteArchivedSetting(defaults, @"PageBarBorderColor", [pageBarBorderColor currentColor]);
+		COWriteArchivedSetting(defaults, @"PageBarReadedColor", [pageBarReadedColor currentColor]);
+		COWriteArchivedSetting(defaults, @"PageBarFontColor", [pageBarFontColor currentColor]);
+		COWriteArchivedSetting(defaults, @"PageBarTextFont", [pageBarFontTextField font]);
+		if ([showPageBarCheck state]==NSControlStateValueOn) {
 			[defaults setBool:YES forKey:@"ShowPageBar"];
 		} else {
 			[defaults setBool:NO forKey:@"ShowPageBar"];
@@ -1496,37 +1460,26 @@ static const int DIALOG_CANCEL	= 129;
 		int thumbnailCache = [[thumbnailCacheTextField stringValue] intValue];
 		[defaults setInteger:thumbnailCache forKey:@"ThumbnailCache"];
 		/*view*/
-		[defaults setObject:[NSArchiver archivedDataWithRootObject:[viewBackGroundColor currentColor]] forKey:@"ViewBackGroundColor"];
+		COWriteArchivedSetting(defaults, @"ViewBackGroundColor", [viewBackGroundColor currentColor]);
 		
 		
 
 		
-		if ([pageNumAutoHideCheck state]==NSOnState) {
+		if ([pageNumAutoHideCheck state]==NSControlStateValueOn) {
 			[defaults setBool:YES forKey:@"PageNumAutoHide"];
 		} else {
 			[defaults setBool:NO forKey:@"PageNumAutoHide"];
 		}			
-		if ([pageBarAutoHideCheck state]==NSOnState) {
+		if ([pageBarAutoHideCheck state]==NSControlStateValueOn) {
 			[defaults setBool:YES forKey:@"PageBarAutoHide"];
 		} else {
 			[defaults setBool:NO forKey:@"PageBarAutoHide"];
 		}	
-		if ([pageBarShowThumbCheck state]==NSOnState) {
+		if ([pageBarShowThumbCheck state]==NSControlStateValueOn) {
 			[defaults setBool:YES forKey:@"PageBarShowThumbnail"];
 		} else {
 			[defaults setBool:NO forKey:@"PageBarShowThumbnail"];
 		}		
-		if ([changeOpenWithCheck state]==NSOnState) {
-			[defaults setBool:YES forKey:@"ChangeOpenWith"];
-		} else {
-			[defaults setBool:NO forKey:@"ChangeOpenWith"];
-		}
-		if ([changeCreatorCheck state]==NSOnState) {
-			[defaults setBool:YES forKey:@"ChangeCreator"];
-		} else {
-			[defaults setBool:NO forKey:@"ChangeCreator"];
-		}
-		
 		switch ([sortModePopUpButton indexOfSelectedItem]) {
 			case 0:
 				[defaults setInteger:0 forKey:@"SortMode"];
@@ -1545,18 +1498,13 @@ static const int DIALOG_CANCEL	= 129;
 			break;
 		}
 		
-		if ([dontHideMenubarCheck state]==NSOnState) {
-			[defaults setBool:YES forKey:@"DontHideMenuBar"];
-		} else {
-			[defaults setBool:NO forKey:@"DontHideMenuBar"];
-		}
-		if ([showThumbnailCheck state]==NSOnState) {
+		if ([showThumbnailCheck state]==NSControlStateValueOn) {
 			[defaults setBool:YES forKey:@"ShowThumbnailWhenOpen"];
 		} else {
 			[defaults setBool:NO forKey:@"ShowThumbnailWhenOpen"];
 		}
 		
-		if ([alwaysRememberLastCheck state]==NSOnState) {
+		if ([alwaysRememberLastCheck state]==NSControlStateValueOn) {
 			[defaults setBool:YES forKey:@"AlwaysRememberLastPage"];
 		} else {
 			[defaults setBool:NO forKey:@"AlwaysRememberLastPage"];
@@ -1595,7 +1543,7 @@ static const int DIALOG_CANCEL	= 129;
 		}
 		[controller setPreferences];
 		return;
-    } else if(result == NSRunAbortedResponse) {
+    } else if(result == NSModalResponseAbort) {
 		[keyArray release];
 		keyArray = nil;
 		[keyArrayMode2 release];
@@ -1818,27 +1766,21 @@ static const int DIALOG_CANCEL	= 129;
 
 - (IBAction)disposeSettings:(id)sender
 {
-    NSBeginAlertSheet(NSLocalizedString(@"Disposing of settings",@""),
-					  NSLocalizedString(@"OK",@""), 
-					  NSLocalizedString(@"Cancel",@""), 
-					  nil, 
-					  preferences, 
-					  self, 
-					  @selector(sureDisposeSettingAlertSheetDidEnd:returnCode:contextInfo:), 
-					  nil, 
-					  nil, 
-					  NSLocalizedString(@"Are you sure you want to delete the setting which file is not found?",@""));
+	NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+	[alert setMessageText:NSLocalizedString(@"Disposing of settings", @"")];
+	[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete the setting which file is not found?", @"")];
+	[alert addButtonWithTitle:NSLocalizedString(@"OK", @"")];
+	[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"")];
+	[alert beginSheetModalForWindow:preferences completionHandler:^(NSModalResponse response) {
+		[self sureDisposeSettingAlertSheetDidEnd:nil returnCode:(int)response contextInfo:NULL];
+	}];
 }
 - (void)sureDisposeSettingAlertSheetDidEnd:(NSWindow*)sheet returnCode:(int)returnCode contextInfo:(void*)contextInfo
 {
-    [sheet orderOut:self];
-	
-	if(returnCode == NSAlertDefaultReturn) {
-		[[NSApplication sharedApplication] beginSheet:disposeSettingPanel 
-									   modalForWindow:preferences 
-										modalDelegate:self 
-									   didEndSelector:@selector(disposeSettingSheetDidEnd:returnCode:contextInfo:) 
-										  contextInfo:nil];
+	if(returnCode == NSAlertFirstButtonReturn) {
+		[preferences beginSheet:disposeSettingPanel completionHandler:^(NSModalResponse response) {
+			[self disposeSettingSheetDidEnd:disposeSettingPanel returnCode:(int)response contextInfo:NULL];
+		}];
 		
 		NSDictionary *currentBookSettingDic;
 		if ([defaults dictionaryForKey:@"BookSettings"]) {
@@ -1908,14 +1850,14 @@ static const int DIALOG_CANCEL	= 129;
 			[defaults setObject:newtBookSettingDic forKey:@"BookSettings"];
 			[defaults setObject:newtLastPageArray forKey:@"LastPages"];
 			[defaults synchronize];
-			[[NSApplication sharedApplication] endSheet:disposeSettingPanel returnCode:DIALOG_OK];
+			[preferences endSheet:disposeSettingPanel returnCode:DIALOG_OK];
 		}
 	}
 }
 
 - (IBAction)disposeSettingsCancel:(id)sender
 {
-	[[NSApplication sharedApplication] endSheet:disposeSettingPanel returnCode:DIALOG_CANCEL];
+	[preferences endSheet:disposeSettingPanel returnCode:DIALOG_CANCEL];
 }
 
 - (void)disposeSettingSheetDidEnd:(NSWindow*)sheet returnCode:(int)returnCode contextInfo:(void*)contextInfo
@@ -1929,20 +1871,11 @@ static const int DIALOG_CANCEL	= 129;
 		message = NSLocalizedString(@"Disposing of settings was completed",@"");
 	}
 	
-    NSBeginAlertSheet(NSLocalizedString(@"Disposing of settings",@""),
-					  NSLocalizedString(@"OK",@""), 
-					  nil, 
-					  nil, 
-					  preferences, 
-					  self, 
-					  @selector(completeDisposeSettingAlertSheetDidEnd:returnCode:contextInfo:), 
-					  nil, 
-					  nil, 
-                      @"%@", message);
-}
-- (void)completeDisposeSettingAlertSheetDidEnd:(NSWindow*)sheet returnCode:(int)returnCode contextInfo:(void*)contextInfo
-{
-    [sheet orderOut:self];
+	NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+	[alert setMessageText:NSLocalizedString(@"Disposing of settings", @"")];
+	[alert setInformativeText:message];
+	[alert addButtonWithTitle:NSLocalizedString(@"OK", @"")];
+	[alert beginSheetModalForWindow:preferences completionHandler:nil];
 }
 
 
@@ -1957,7 +1890,7 @@ static const int DIALOG_CANCEL	= 129;
 	[[NSFontManager sharedFontManager] setAction:@selector(changeFont:)];
     [fontPanel makeKeyAndOrderFront:self];
 }
-- (void)changeFont:(id)fontManager
+- (void)changeFont:(NSFontManager *)fontManager
 {
     NSFont *oldFont = [fontTextField font];
     NSFont *newFont = [fontManager convertFont:oldFont];
@@ -2034,11 +1967,9 @@ static const int DIALOG_CANCEL	= 129;
 	[mousePanelSwitchActionCheck setEnabled:NO];
 	[mouseValueTextField setEnabled:NO];
 	lastInput = nil;
-	[[NSApplication sharedApplication] beginSheet:mouseConfigPanel 
-								   modalForWindow:preferences 
-									modalDelegate:self 
-								   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
-									  contextInfo:nil];
+	[preferences beginSheet:mouseConfigPanel completionHandler:^(NSModalResponse response) {
+		[self sheetDidEnd:mouseConfigPanel returnCode:(int)response contextInfo:NULL];
+	}];
 }
 
 
@@ -2084,13 +2015,13 @@ static const int DIALOG_CANCEL	= 129;
 	
 	[mouse setObject:[NSNumber numberWithInt:(int)[mousePanelButtonPopUpButton selectedTag]] forKey:@"button"];
 	int cMod = 0;
-	if ([mousePanelShiftCheck state] == NSOnState) {
+	if ([mousePanelShiftCheck state] == NSControlStateValueOn) {
 		cMod += 1;
 	}
-	if ([mousePanelOptionCheck state] == NSOnState) {
+	if ([mousePanelOptionCheck state] == NSControlStateValueOn) {
 		cMod += 2;
 	}
-	if ([mousePanelControlCheck state] == NSOnState) {
+	if ([mousePanelControlCheck state] == NSControlStateValueOn) {
 		cMod += 4;
 	}
 	if ([mousePanelClickPopUpButton isEnabled]) {
@@ -2130,7 +2061,7 @@ static const int DIALOG_CANCEL	= 129;
 	}
 	[mouse setObject:[NSNumber numberWithInt:cMod] forKey:@"modifier"];
 	
-	if ([mousePanelSwitchActionCheck isEnabled] && [mousePanelSwitchActionCheck state] == NSOnState) {
+	if ([mousePanelSwitchActionCheck isEnabled] && [mousePanelSwitchActionCheck state] == NSControlStateValueOn) {
 		[mouse setObject:[NSNumber numberWithBool:YES] forKey:@"switchAction"];
 	} else {
 		[mouse removeObjectForKey:@"switchAction"];
@@ -2141,7 +2072,7 @@ static const int DIALOG_CANCEL	= 129;
 	[mouseTableView reloadData];
     [mouseTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:[currentMouseArray indexOfObject:mouse]] byExtendingSelection:NO];
 	[mouseTableView scrollRowToVisible:[currentMouseArray indexOfObject:mouse]];
-	[[NSApplication sharedApplication] endSheet:mouseConfigPanel returnCode:DIALOG_OK];
+	[preferences endSheet:mouseConfigPanel returnCode:DIALOG_OK];
 	[lastInput release];
 	lastInput = nil;
 }
@@ -2152,7 +2083,7 @@ static const int DIALOG_CANCEL	= 129;
 		[lastInput release];
 		lastInput = nil;
 	}
-	[[NSApplication sharedApplication] endSheet:mouseConfigPanel returnCode:DIALOG_CANCEL];
+	[preferences endSheet:mouseConfigPanel returnCode:DIALOG_CANCEL];
 }
 
 - (IBAction)mousePanelActionPopUpButtonAction:(id)sender
@@ -2235,100 +2166,10 @@ static const int DIALOG_CANCEL	= 129;
 	}
 	
 	
-	NSBeginAlertSheet(title,
-					  NSLocalizedString(@"OK",@""), 
-					  NSLocalizedString(@"Cancel",@""), 
-					  nil,
-					  preferences,
-					  self,
-					  @selector(runAlertSheetDidEnd:returnCode:contextInfo:), 
-					  nil, 
-					  @"mouse", 
-                      @"%@", message);
+	[self confirmResetWithTitle:title message:message kind:@"mouse"];
 }
 
 #pragma mark keyConfig
-
-- (BOOL)inKeyEdit
-{
-	if ([keyConfigPanel isKeyWindow] && [[keyPanelTextView backgroundColor] isEqualTo:[NSColor lightGrayColor]]) {
-		return YES;
-	}
-	return NO;
-}
-- (void)setKeyCharacters:(NSString*)characters
-{
-    unichar character = [characters characterAtIndex: 0];
-	NSString *keyName;
-	switch(character) {
-		case kRemoteButtonPlus:
-			keyName = @"AppleRemote Volume up";			
-			break;
-		case kRemoteButtonMinus:
-			keyName = @"AppleRemote Volume down";
-			break;			
-		case kRemoteButtonMenu:
-			keyName = @"AppleRemote Menu";
-			break;			
-		case kRemoteButtonPlay:
-			keyName = @"AppleRemote Play";
-			break;			
-		case kRemoteButtonRight:	
-			keyName = @"AppleRemote Right";
-			break;			
-		case kRemoteButtonLeft:
-			keyName = @"AppleRemote Left";
-			break;			
-		case kRemoteButtonRight_Hold:
-			//keyName = @"AppleRemote Right holding";	
-			keyName = @"AppleRemote Right";
-			break;	
-		case kRemoteButtonLeft_Hold:
-			//keyName = @"AppleRemote Left holding";	
-			keyName = @"AppleRemote Left";	
-			break;			
-		case kRemoteButtonPlus_Hold:
-			//keyName = @"AppleRemote Volume up holding";	
-			keyName = @"AppleRemote Volume up";	
-			break;				
-		case kRemoteButtonMinus_Hold:			
-			//keyName = @"AppleRemote Volume down holding";
-			keyName = @"AppleRemote Volume down";	
-			break;				
-		case kRemoteButtonPlay_Hold:
-			//keyName = @"AppleRemote Play (sleep mode)";
-			keyName = @"AppleRemote Play";
-			break;			
-		case kRemoteButtonMenu_Hold:
-			//keyName = @"AppleRemote Menu (long)";
-			keyName = @"AppleRemote Menu";
-			break;
-		case kRemoteControl_Switched:
-			keyName = @"AppleRemote Remote Control Switched";
-			break;
-		default:
-			keyName = [NSString stringWithFormat:@"AppleRemote button%@",characters];
-			break;
-	}
-	
-	unsigned int cMod = 100;
-	
-	if (lastInput) {
-		[lastInput setObject:keyName forKey:@"keyname"];
-		[lastInput setObject:characters forKey:@"key"];
-		[lastInput setObject:[NSNumber numberWithInt:cMod] forKey:@"modifier"];
-	} else {
-		lastInput = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
-			[NSNumber numberWithInt:-1],@"action",
-			keyName,@"keyname",
-			characters,@"key",
-			[NSNumber numberWithInt:cMod],@"modifier",
-			nil];
-	}
-	[keyPanelTextView setString:keyName];
-	
-	[keyPanelPopUpButton setEnabled:YES];
-}
 
 - (IBAction)keyConfig:(id)sender
 {		
@@ -2355,11 +2196,9 @@ static const int DIALOG_CANCEL	= 129;
 	[keyPanelSwitchActionCheck setEnabled:NO];
 	lastInput = nil;
 	[keyPanelTextView setString:@"Push any key..."];
-	[[NSApplication sharedApplication] beginSheet:keyConfigPanel 
-								   modalForWindow:preferences 
-									modalDelegate:self 
-								   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
-									  contextInfo:nil];
+	[preferences beginSheet:keyConfigPanel completionHandler:^(NSModalResponse response) {
+		[self sheetDidEnd:keyConfigPanel returnCode:(int)response contextInfo:NULL];
+	}];
 }
 
 
@@ -2446,10 +2285,10 @@ static const int DIALOG_CANCEL	= 129;
 	
 	NSMutableString *tempKeyName = [NSMutableString string]; 
 	unsigned int cMod = 0;
-	BOOL shift = ([sender modifierFlags] & NSShiftKeyMask) ? YES : NO;
-	BOOL option = ([sender modifierFlags] & NSAlternateKeyMask) ? YES : NO;
-	BOOL control = ([sender modifierFlags] & NSControlKeyMask) ? YES : NO;
-	BOOL numeric = ([sender modifierFlags] & NSNumericPadKeyMask) ? YES : NO;
+	BOOL shift = ([sender modifierFlags] & NSEventModifierFlagShift) ? YES : NO;
+	BOOL option = ([sender modifierFlags] & NSEventModifierFlagOption) ? YES : NO;
+	BOOL control = ([sender modifierFlags] & NSEventModifierFlagControl) ? YES : NO;
+	BOOL numeric = ([sender modifierFlags] & NSEventModifierFlagNumericPad) ? YES : NO;
 	if (shift) {
 		cMod += 1;
 		[tempKeyName appendString:@"shift+"];
@@ -2515,7 +2354,7 @@ static const int DIALOG_CANCEL	= 129;
 			break;
 			
 	}
-	if ([keyPanelSwitchActionCheck isEnabled] && [keyPanelSwitchActionCheck state] == NSOnState) {
+	if ([keyPanelSwitchActionCheck isEnabled] && [keyPanelSwitchActionCheck state] == NSControlStateValueOn) {
 		[lastInput setObject:[NSNumber numberWithBool:YES] forKey:@"switchAction"];
 	} else {
 		[lastInput removeObjectForKey:@"switchAction"];
@@ -2526,7 +2365,7 @@ static const int DIALOG_CANCEL	= 129;
 	[inputTableView reloadData];
     [inputTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:[currentKeyArray indexOfObject:lastInput]] byExtendingSelection:NO];
 	[inputTableView scrollRowToVisible:[currentKeyArray indexOfObject:lastInput]];
-	[[NSApplication sharedApplication] endSheet:keyConfigPanel returnCode:DIALOG_OK];
+	[preferences endSheet:keyConfigPanel returnCode:DIALOG_OK];
 	[lastInput release];
 	lastInput = nil;
 }
@@ -2537,7 +2376,7 @@ static const int DIALOG_CANCEL	= 129;
 		[lastInput release];
 		lastInput = nil;
 	}
-	[[NSApplication sharedApplication] endSheet:keyConfigPanel returnCode:DIALOG_CANCEL];
+	[preferences endSheet:keyConfigPanel returnCode:DIALOG_CANCEL];
 }
 
 - (IBAction)keyConfigDelete:(id)sender
@@ -2624,16 +2463,7 @@ static const int DIALOG_CANCEL	= 129;
 			NSBeep();
 			return;
 	}
-	NSBeginAlertSheet(title,
-					  NSLocalizedString(@"OK",@""), 
-					  NSLocalizedString(@"Cancel",@""), 
-					  nil,
-					  preferences,
-					  self,
-					  @selector(runAlertSheetDidEnd:returnCode:contextInfo:), 
-					  nil, 
-					  @"key", 
-                      @"%@", message);	
+	[self confirmResetWithTitle:title message:message kind:@"key"];
 }
 #pragma mark key&mouseEdit
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
@@ -2673,18 +2503,16 @@ static const int DIALOG_CANCEL	= 129;
 			}
 		}
 		if ([[lastInput objectForKey:@"switchAction"] boolValue] == YES) {
-			[keyPanelSwitchActionCheck setState:NSOnState];
+			[keyPanelSwitchActionCheck setState:NSControlStateValueOn];
 		} else {
-			[keyPanelSwitchActionCheck setState:NSOffState];
+			[keyPanelSwitchActionCheck setState:NSControlStateValueOff];
 		}
 		
 		[keyPanelPopUpButton setEnabled:YES];
 		[keyPanelTextView setString:[lastInput objectForKey:@"keyname"]];
-		[[NSApplication sharedApplication] beginSheet:keyConfigPanel 
-									   modalForWindow:preferences 
-										modalDelegate:self 
-									   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
-										  contextInfo:nil];
+		[preferences beginSheet:keyConfigPanel completionHandler:^(NSModalResponse response) {
+		[self sheetDidEnd:keyConfigPanel returnCode:(int)response contextInfo:NULL];
+	}];
 	} else if (aTableView == mouseTableView) {
 		editMode = YES;
 		editedInputIndex = rowIndex;
@@ -2713,9 +2541,9 @@ static const int DIALOG_CANCEL	= 129;
 				[[menuArray objectAtIndex:i] setAction:@selector(mousePanelActionPopUpButtonAction:)];
 			}
 		}
-		[mousePanelShiftCheck setState:NSOffState];
-		[mousePanelOptionCheck setState:NSOffState];
-		[mousePanelControlCheck setState:NSOffState];
+		[mousePanelShiftCheck setState:NSControlStateValueOff];
+		[mousePanelOptionCheck setState:NSControlStateValueOff];
+		[mousePanelControlCheck setState:NSControlStateValueOff];
 		int cMod = [[lastInput objectForKey:@"modifier"] intValue];
 		if (cMod>=1000) {
 			[mousePanelClickPopUpButton selectItemAtIndex:10];
@@ -2752,13 +2580,13 @@ static const int DIALOG_CANCEL	= 129;
 		}
 		switch (cMod) {
 			case 0:break;
-			case 1:[mousePanelShiftCheck setState:NSOnState];break;
-			case 2:[mousePanelOptionCheck setState:NSOnState];break;
-			case 3:[mousePanelShiftCheck setState:NSOnState];[mousePanelOptionCheck setState:NSOnState];break;
-			case 4:[mousePanelControlCheck setState:NSOnState];break;
-			case 5:[mousePanelControlCheck setState:NSOnState];[mousePanelShiftCheck setState:NSOnState];break;
-			case 6:[mousePanelControlCheck setState:NSOnState];[mousePanelOptionCheck setState:NSOnState];break;
-			case 7:[mousePanelControlCheck setState:NSOnState];[mousePanelShiftCheck setState:NSOnState];[mousePanelOptionCheck setState:NSOnState];break;
+			case 1:[mousePanelShiftCheck setState:NSControlStateValueOn];break;
+			case 2:[mousePanelOptionCheck setState:NSControlStateValueOn];break;
+			case 3:[mousePanelShiftCheck setState:NSControlStateValueOn];[mousePanelOptionCheck setState:NSControlStateValueOn];break;
+			case 4:[mousePanelControlCheck setState:NSControlStateValueOn];break;
+			case 5:[mousePanelControlCheck setState:NSControlStateValueOn];[mousePanelShiftCheck setState:NSControlStateValueOn];break;
+			case 6:[mousePanelControlCheck setState:NSControlStateValueOn];[mousePanelOptionCheck setState:NSControlStateValueOn];break;
+			case 7:[mousePanelControlCheck setState:NSControlStateValueOn];[mousePanelShiftCheck setState:NSControlStateValueOn];[mousePanelOptionCheck setState:NSControlStateValueOn];break;
 			default:break;
 		}
 		[mousePanelButtonPopUpButton selectItemWithTag:[[lastInput objectForKey:@"button"] intValue]];
@@ -2768,15 +2596,13 @@ static const int DIALOG_CANCEL	= 129;
 			[mousePanelClickPopUpButton setEnabled:YES];
 		}
 		if ([[lastInput objectForKey:@"switchAction"] boolValue] == YES) {
-			[mousePanelSwitchActionCheck setState:NSOnState];
+			[mousePanelSwitchActionCheck setState:NSControlStateValueOn];
 		} else {
-			[mousePanelSwitchActionCheck setState:NSOffState];
+			[mousePanelSwitchActionCheck setState:NSControlStateValueOff];
 		}
-		[[NSApplication sharedApplication] beginSheet:mouseConfigPanel 
-									   modalForWindow:preferences 
-										modalDelegate:self 
-									   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
-										  contextInfo:nil];
+		[preferences beginSheet:mouseConfigPanel completionHandler:^(NSModalResponse response) {
+		[self sheetDidEnd:mouseConfigPanel returnCode:(int)response contextInfo:NULL];
+	}];
 		
 	}
     return NO;
@@ -2785,21 +2611,27 @@ static const int DIALOG_CANCEL	= 129;
 #pragma mark key&mouseConfig
 - (void)sheetDidEnd:(NSWindow*)sheet returnCode:(int)returnCode contextInfo:(void*)contextInfo
 {
-	if ([keyConfigPanel isVisible]) {
-		[keyConfigPanel orderOut:self];
-	} else if ([mouseConfigPanel isVisible]) {
-		[mouseConfigPanel orderOut:self];
-	}
+	[sheet orderOut:self];
 	
 	if(returnCode == DIALOG_OK) {
     }
 }
 
+- (void)confirmResetWithTitle:(NSString *)title message:(NSString *)message kind:(NSString *)kind
+{
+	NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+	[alert setMessageText:title];
+	[alert setInformativeText:message];
+	[alert addButtonWithTitle:NSLocalizedString(@"OK", @"")];
+	[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"")];
+	[alert beginSheetModalForWindow:preferences completionHandler:^(NSModalResponse response) {
+		[self runAlertSheetDidEnd:nil returnCode:(int)response contextInfo:(void *)kind];
+	}];
+}
+
 - (void)runAlertSheetDidEnd:(NSWindow*)sheet returnCode:(int)returnCode contextInfo:(void*)contextInfo
 {
-	[sheet orderOut:self];
-	
-	if(returnCode == NSAlertDefaultReturn) {
+	if(returnCode == NSAlertFirstButtonReturn) {
 		if ([(NSString*)contextInfo isEqualToString:@"mouse"]) {
 			int mode = (int)[mouseModePopUpButton indexOfSelectedItem];
 			switch (mode) {

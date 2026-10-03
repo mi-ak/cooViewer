@@ -11,10 +11,11 @@
 -(void)awakeFromNib
 {
     [filterPanel setFrameAutosaveName:@"FilterPanel"];
+    [filterPanel setCollectionBehavior:[filterPanel collectionBehavior] | NSWindowCollectionBehaviorFullScreenAuxiliary];
     
     filterDic = [[NSMutableDictionary alloc] init];
     selectedFilterUIViews = [[NSMutableDictionary alloc] init];
-    [CIPlugIn loadAllPlugIns];
+    [CIPlugIn loadNonExecutablePlugIns];
     
     NSArray *usingCategories =
         [NSArray arrayWithObjects:
@@ -43,7 +44,11 @@
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if ([defaults arrayForKey:@"CIFilterKeys"]) {
         NSArray *tmpSelectedFilterKeys = [defaults arrayForKey:@"CIFilterKeys"];
-        NSMutableDictionary *dic = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSObject class]
+        NSSet *classes = [NSSet setWithObjects:[NSDictionary class], [NSMutableDictionary class],
+            [NSArray class], [NSString class], [NSNumber class], [NSData class],
+            [NSColor class], [NSValue class], [CIFilter class], [CIColor class],
+            [CIVector class], [CIImage class], nil];
+        NSDictionary *dic = [NSKeyedUnarchiver unarchivedObjectOfClasses:classes
             fromData:[defaults objectForKey:@"CIFilters"] error:nil];
         NSEnumerator *enu = [tmpSelectedFilterKeys objectEnumerator];
         NSString *filterKey;
@@ -90,7 +95,7 @@
             
             NSButton *closeBtn = [[[NSButton alloc] init] autorelease];
             [closeBtn setImage:[NSImage imageNamed:NSImageNameStopProgressFreestandingTemplate]];
-            [closeBtn setBezelStyle:NSInlineBezelStyle];
+            [closeBtn setBezelStyle:NSBezelStyleInline];
             [closeBtn setBordered:NO];
             //[closeBtn setControlSize:NSControlSizeMini];
             [closeBtn setFrameSize:NSMakeSize(15,16)];
@@ -178,8 +183,9 @@
 - (void)setUserDefaults
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:selectedFilters];
-    [defaults setObject:data forKey:@"CIFilters"];
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:selectedFilters
+                                         requiringSecureCoding:YES error:nil];
+    if (data) [defaults setObject:data forKey:@"CIFilters"];
     [defaults setObject:selectedFilterKeys forKey:@"CIFilterKeys"];
 }
 - (void)sendNotification

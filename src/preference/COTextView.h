@@ -7,7 +7,6 @@
 //
 
 #import <Cocoa/Cocoa.h>
-@class RemoteControl;
 
 @interface COTextView : NSTextView
 {

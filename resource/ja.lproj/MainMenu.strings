@@ -484,8 +484,8 @@
 /* Class = "NSBox"; title = "View"; ObjectID = "2037"; */
 "2037.title" = "ビュー";
 
-/* Class = "NSTabViewItem"; label = "Keyboard & AppleRemote"; ObjectID = "2067"; */
-"2067.label" = "キーボード & AppleRemote";
+/* Class = "NSTabViewItem"; label = "Keyboard"; ObjectID = "2067"; */
+"2067.label" = "キーボード";
 
 /* Class = "NSTabViewItem"; label = "Mouse"; ObjectID = "2068"; */
 "2068.label" = "マウス";
@@ -1218,9 +1218,6 @@
 
 /* Class = "NSButtonCell"; title = "Fit original size window to image size"; ObjectID = "4315"; */
 "4315.title" = "実寸表示ウィンドウのサイズを内容に合わせる";
-
-/* Class = "NSButtonCell"; title = "Don't hide menu bar"; ObjectID = "4316"; */
-"4316.title" = "メニューバーを隠さない";
 
 /* Class = "NSButtonCell"; title = "Show thumbnail view on open"; ObjectID = "4317"; */
 "4317.title" = "開いたときに一覧を表示する";

@@ -86,7 +86,7 @@
 			[NSGraphicsContext saveGraphicsState]; 		
 			[base addClip]; 
 			[pageBarReadedColor set];
-			NSRectFillUsingOperation(slice,NSCompositeSourceOver);
+			NSRectFillUsingOperation(slice,NSCompositingOperationSourceOver);
 			[NSGraphicsContext restoreGraphicsState]; 		
 		}
 		if (![pageBarBorderColor isEqualTo:[NSColor clearColor]]) {
@@ -99,7 +99,7 @@
 		tempRect.origin.x += tempRect.size.width-10;
 		tempRect.size.width = 10;
 		tempRect.size.height = 10;
-		[resizeIndicator drawInRect:tempRect fromRect:NSMakeRect(0,0,15,15) operation:NSCompositeSourceOver fraction:1.0];
+		[resizeIndicator drawInRect:tempRect fromRect:NSMakeRect(0,0,15,15) operation:NSCompositingOperationSourceOver fraction:1.0];
 		
 		NSBezierPath *path = [NSBezierPath bezierPath];
 		switch (pageBarPosition) {
@@ -221,7 +221,7 @@
 	}
 	[pageStringAttr release];
 	if ([textBGColor isEqualTo:[NSColor clearColor]]) {
-		NSColor *shadowColor = [textFontColor colorUsingColorSpaceName:NSCalibratedWhiteColorSpace];
+		NSColor *shadowColor = [textFontColor colorUsingColorSpace:[NSColorSpace genericGrayColorSpace]];
 		CGFloat white,alpha;
 		[shadowColor getWhite:&white alpha:&alpha];
 		NSShadow *shadow = [[NSShadow alloc] init];

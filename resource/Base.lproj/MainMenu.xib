@@ -337,7 +337,7 @@
                 <menuItem title="Window" id="19">
                     <menu key="submenu" title="Window" systemMenu="window" id="24">
                         <items>
-                            <menuItem title="Fullscreen" state="on" keyEquivalent="f" id="926">
+                            <menuItem title="Fullscreen" keyEquivalent="f" id="926">
                                 <connections>
                                     <action selector="fullscreen:" target="484" id="927"/>
                                 </connections>
@@ -1168,14 +1168,6 @@ go to the last page always.</string>
                                                 </subviews>
                                             </view>
                                         </box>
-                                        <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2104">
-                                            <rect key="frame" x="18" y="18" width="152" height="18"/>
-                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                            <buttonCell key="cell" type="check" title="Don't hide menu bar" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="4316">
-                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                <font key="font" metaFont="system"/>
-                                            </buttonCell>
-                                        </button>
                                         <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2105">
                                             <rect key="frame" x="18" y="58" width="211" height="18"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -1220,7 +1212,7 @@ go to the last page always.</string>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <font key="font" metaFont="system"/>
                                             <tabViewItems>
-                                                <tabViewItem label="Keyboard &amp; AppleRemote" identifier="" id="2067">
+                                                <tabViewItem label="Keyboard" identifier="" id="2067">
                                                     <view key="view" ambiguous="YES" id="2069">
                                                         <rect key="frame" x="10" y="33" width="547" height="415"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2930,7 +2922,6 @@ Gw
                 <outlet property="controller" destination="484" id="1674"/>
                 <outlet property="disposeSettingPanel" destination="3296" id="3307"/>
                 <outlet property="disposeSettingProgress" destination="3300" id="3308"/>
-                <outlet property="dontHideMenubarCheck" destination="2104" id="2106"/>
                 <outlet property="enlargePopUpButton" destination="836" id="1688"/>
                 <outlet property="fitOriginalCheck" destination="1627" id="1689"/>
                 <outlet property="fontTextField" destination="2769" id="2772"/>

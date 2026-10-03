@@ -3,7 +3,9 @@
 #import "COImageLoader.h"
 #import "COPDFImage.h"
 #import "COPDFImageRep.h"
+#import "NSString_Compare.h"
 #import <ImageIO/ImageIO.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 @interface COImageLoader (private)
 -(void)content;
@@ -64,7 +66,7 @@ static NSArray *_COImageLoader_imageFileTypes=nil;
 		CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 		_compositingContext = CGBitmapContextCreate(NULL,
 			(size_t)imageSize.width, (size_t)imageSize.height, 8, 0, colorSpace,
-			kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+			(CGBitmapInfo)kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
 		CGColorSpaceRelease(colorSpace);
 		_currentFrameImage = [[self compositedImageForFrame:firstFrame clearCanvas:YES] retain];
 
@@ -244,13 +246,29 @@ static NSArray *_COImageLoader_imageFileTypes=nil;
 +(NSArray *)imageFileTypes
 {
 	if (!_COImageLoader_imageFileTypes) {
-		NSMutableArray *types = [NSMutableArray arrayWithArray:[NSImage imageFileTypes]];
+		NSMutableSet *types = [NSMutableSet set];
+		for (NSString *identifier in [NSImage imageTypes]) {
+			UTType *type = [UTType typeWithIdentifier:identifier];
+			NSArray *extensions = [[type tags] objectForKey:UTTagClassFilenameExtension];
+			if (extensions) [types addObjectsFromArray:extensions];
+		}
+		// Some systems resolve only a few advertised type identifiers through
+		// LaunchServices. Preserve the previous image extension set there.
+		if ([types count] < 10) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+			[types addObjectsFromArray:[NSImage imageFileTypes]];
+#pragma clang diagnostic pop
+		}
 		// AVIF is supported by ImageIO on current macOS versions, but older
 		// AppKit SDK/runtime combinations do not always advertise the extension.
-		[types addObjectsFromArray:[NSArray arrayWithObjects:@"avif", @"AVIF", nil]];
-		if (![types containsObject:@"webp"]) [types addObject:@"webp"];
-		if (![types containsObject:@"WEBP"]) [types addObject:@"WEBP"];
-		_COImageLoader_imageFileTypes = [[NSArray arrayWithArray:types] retain];
+		[types addObjectsFromArray:[NSArray arrayWithObjects:@"avif", @"webp", nil]];
+		NSMutableSet *normalizedTypes = [NSMutableSet set];
+		for (NSString *extension in types) {
+			[normalizedTypes addObject:[extension lowercaseString]];
+			[normalizedTypes addObject:[extension uppercaseString]];
+		}
+		_COImageLoader_imageFileTypes = [[[normalizedTypes allObjects] sortedArrayUsingSelector:@selector(compare:)] retain];
 	}
 	return _COImageLoader_imageFileTypes;
 }
@@ -268,7 +286,12 @@ static NSArray *_COImageLoader_imageFileTypes=nil;
 				[array addObjectsFromArray:inner];
 			}
 		}
-		[array removeObjectsInArray:[COImageLoader imageFileTypes]];
+		NSArray *imageTypes = [COImageLoader imageFileTypes];
+		for (NSString *extension in [NSArray arrayWithArray:array]) {
+			if ([imageTypes containsObject:[extension lowercaseString]]) {
+				[array removeObject:extension];
+			}
+		}
 		[array removeObjectsInArray:[NSArray arrayWithObjects:@"savedSearch",nil]];
 		[array addObject:@"pdf"];
 		_COImageLoader_fileTypes = [[NSArray arrayWithArray:array] retain];

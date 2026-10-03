@@ -108,7 +108,7 @@
             [transform concat];
             [image drawInRect:NSMakeRect((iPoint.x*-1+lensSize/2),(iPoint.y*-1+lensSize/2),widthValue*lensRate,heightValue*lensRate)
                     fromRect:NSMakeRect(0,0,widthValue,heightValue)
-                    operation:NSCompositeSourceOver fraction:1.0];
+                    operation:NSCompositingOperationSourceOver fraction:1.0];
             [transform invert];
             [transform concat];
         } else {
@@ -173,7 +173,7 @@
                     sPoint.y = (int)((drawPoint.y - sTempRect.origin.y)*lensRate*x);
                     [sImage drawInRect:NSMakeRect((sPoint.x*-1+lensSize/2),(sPoint.y*-1+lensSize/2),sWidthValue*lensRate,sHeightValue*lensRate)
                             fromRect:NSMakeRect(0,0,sWidthValue,sHeightValue)
-                            operation:NSCompositeSourceOver fraction:1.0];
+                            operation:NSCompositingOperationSourceOver fraction:1.0];
                 }
             } else /*if (NSPointInRect(mPoint,sRect))*/ {
                 if ([targetController readFromLeft]) {
@@ -207,12 +207,12 @@
                     sPoint.y = (int)((drawPoint.y - fTempRect.origin.y)*lensRate*x);
                     [sImage drawInRect:NSMakeRect((sPoint.x*-1+lensSize/2),(sPoint.y*-1+lensSize/2),sWidthValue*lensRate,sHeightValue*lensRate)
                             fromRect:NSMakeRect(0,0,sWidthValue,sHeightValue)
-                            operation:NSCompositeSourceOver fraction:1.0];
+                            operation:NSCompositingOperationSourceOver fraction:1.0];
                 }
             }
             [image drawInRect:NSMakeRect((iPoint.x*-1+lensSize/2),(iPoint.y*-1+lensSize/2),widthValue*lensRate,heightValue*lensRate)
                     fromRect:NSMakeRect(0,0,widthValue,heightValue)
-                    operation:NSCompositeSourceOver fraction:1.0];
+                    operation:NSCompositingOperationSourceOver fraction:1.0];
             [transform invert];
             [transform concat];
         }

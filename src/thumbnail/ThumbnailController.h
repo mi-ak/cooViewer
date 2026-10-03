@@ -5,7 +5,7 @@
 @class COImageLoader;
 
 
-@interface ThumbnailController : NSObject
+@interface ThumbnailController : NSObject <NSMenuItemValidation>
 {
 	BOOL bookmarkMode;
 	int nowBookmarkPage;
@@ -70,7 +70,6 @@
 -(void)clearCell;
 -(void)clearAll;
 - (void)imageSelected:(id)sender;
--(void)appleRemoteAction:(NSString*)characters;
 -(void)action:(NSEvent*)event;
 -(void)wheelAction:(NSEvent*)event;
 -(void)wheelSetting:(float)set;

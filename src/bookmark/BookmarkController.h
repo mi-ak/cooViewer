@@ -1,10 +1,11 @@
 /* BookmarkController */
 
 #import <Cocoa/Cocoa.h>
+@class Controller;
 
 @interface BookmarkController : NSObject
 {
-	IBOutlet id controller;
+	IBOutlet Controller *controller;
 	
 	IBOutlet id window;
     IBOutlet id bookmarkPanel;

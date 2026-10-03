@@ -1,4 +1,6 @@
 #import "BookmarkController.h"
+#import "Controller.h"
+#import "NSString_Compare.h"
 
 @implementation BookmarkController
 
@@ -86,11 +88,9 @@ static const int DIALOG_CANCEL	= 129;
 	
 	
 	window = [NSApp keyWindow];
-    [[NSApplication sharedApplication] beginSheet:bookmarkPanel 
-								   modalForWindow:window 
-									modalDelegate:self 
-								   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
-									  contextInfo:nil];	
+	[window beginSheet:bookmarkPanel completionHandler:^(NSModalResponse response) {
+		[self sheetDidEnd:bookmarkPanel returnCode:(int)response contextInfo:NULL];
+	}];
 }
 
 
@@ -119,7 +119,7 @@ static const int DIALOG_CANCEL	= 129;
 - (IBAction)ok:(id)sender;
 {
 	if ([bookmarkPanel isVisible]) {
-		[[NSApplication sharedApplication] endSheet:bookmarkPanel returnCode:DIALOG_OK];
+		[window endSheet:bookmarkPanel returnCode:DIALOG_OK];
 	} else {
 		[[NSApplication sharedApplication] stopModalWithCode:DIALOG_OK];
 	}
@@ -129,7 +129,7 @@ static const int DIALOG_CANCEL	= 129;
 - (IBAction)cancel:(id)sender;
 {
 	if ([bookmarkPanel isVisible]) {
-		[[NSApplication sharedApplication] endSheet:bookmarkPanel returnCode:DIALOG_CANCEL];
+		[window endSheet:bookmarkPanel returnCode:DIALOG_CANCEL];
 	} else {
 		[[NSApplication sharedApplication] stopModalWithCode:DIALOG_CANCEL];
 	}
@@ -422,7 +422,7 @@ static const int DIALOG_CANCEL	= 129;
     if (nil == pageInfo) {
         NSMutableParagraphStyle *pageStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
         [pageStyle setLineBreakMode:NSLineBreakByTruncatingMiddle];
-        [pageStyle setAlignment:NSRightTextAlignment];
+        [pageStyle setAlignment:NSTextAlignmentRight];
         pageInfo = [[NSDictionary alloc] initWithObjectsAndKeys:pageStyle, NSParagraphStyleAttributeName, nil];
         [pageStyle release];
     }

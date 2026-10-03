@@ -33,7 +33,7 @@
 {
     [[NSColor whiteColor] set];
     NSRectFill(dstSpacePortionRect);
-    return [super drawInRect:dstSpacePortionRect fromRect:srcSpacePortionRect operation:NSCompositeSourceOver fraction:requestedAlpha respectFlipped:respectContextIsFlipped hints:hints];
+    return [super drawInRect:dstSpacePortionRect fromRect:srcSpacePortionRect operation:NSCompositingOperationSourceOver fraction:requestedAlpha respectFlipped:respectContextIsFlipped hints:hints];
 }
 
 -(NSInteger)pixelsWide {return [self size].width;}
@@ -72,11 +72,11 @@
 					// Link must have a URL associated with it.
 					oneAnnotation = [annotations objectAtIndex: i];
 					if (([[oneAnnotation type] isEqualToString: @"Link"]) && 
-						([(PDFAnnotationLink *)oneAnnotation URL] != NULL))
+						([oneAnnotation URL] != NULL))
 					{
 						[tmpTmpArray addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 												[NSValue valueWithRect:[oneAnnotation bounds]],@"rect",
-												[(PDFAnnotationLink *)oneAnnotation URL],@"url",
+												[oneAnnotation URL],@"url",
 												nil]];
 					}
 				}

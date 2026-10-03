@@ -2,7 +2,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface PreferenceController : NSObject
+@interface PreferenceController : NSObject <NSMenuItemValidation, NSFontChanging>
 {	
 	int editedInputIndex;
 	BOOL editMode;
@@ -23,10 +23,7 @@
 	IBOutlet id sortModePopUpButton;
 	
 	
-	IBOutlet id changeOpenWithCheck;
-	IBOutlet id changeCreatorCheck;
 	
-	IBOutlet id dontHideMenubarCheck;
 	IBOutlet id showThumbnailCheck;
 	
 	IBOutlet id imageCacheTextField;
@@ -122,6 +119,7 @@
 + (void)setDefaultKeyArray;
 + (void)setDefaultKeyArrayMode2;
 + (void)setDefaultKeyArrayMode3;
++ (void)removeLegacyRemoteBindings;
 + (void)setDefaultMouseArray;
 + (void)setDefaultMouseArrayMode2;
 + (void)setDefaultMouseArrayMode3;
@@ -170,6 +168,4 @@
 
 
 - (IBAction)setPosition:(id)sender;
-- (BOOL)inKeyEdit;
-- (void)setKeyCharacters:(NSString*)characters;
 @end

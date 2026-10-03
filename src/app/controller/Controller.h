@@ -1,17 +1,12 @@
 /* Controller */
 
 #import <Cocoa/Cocoa.h>
-#import <Carbon/Carbon.h>
 
 @class COImageLoader;
-@class RemoteControl;
-@class MultiClickRemoteBehavior;
+@class ThumbnailController, CustomImageView, FullImagePanel;
 
 @interface Controller : NSObject
 {
-	RemoteControl *remoteControl;
-	MultiClickRemoteBehavior* remoteControlBehavior;
-	
 	NSMutableDictionary *currentBookSetting;
 	int threadCount;
 	//NSMutableArray *recentItems;
@@ -67,7 +62,7 @@
 	
 	
 	
-	IBOutlet id thumController;
+	IBOutlet ThumbnailController *thumController;
 	
 	float wheelSensitivity;
 
@@ -83,7 +78,7 @@
 	
 	int loopCheck;
 	
-	IBOutlet id fullImagePanel;
+	IBOutlet FullImagePanel *fullImagePanel;
     IBOutlet id fullImageView;
 	
 	
@@ -95,7 +90,7 @@
 	
     //IBOutlet id pageTextField;
 	
-    IBOutlet id imageView;
+	IBOutlet CustomImageView *imageView;
     IBOutlet id window;
 	
 	int maxEnlargement;
@@ -105,6 +100,8 @@
 	
 	NSUserDefaults *defaults;
 	BOOL timerSwitch;
+	id slideshowActivity;
+	BOOL restoreFullscreenOnNextKey;
 	//BOOL loopSwitch;
 	BOOL numberSwitch;
 	BOOL fitMode;
@@ -153,8 +150,6 @@
 	
 }
 - (void)awakeFromNib;
-
-- (void)setupRemoteControl;
 
 - (IBAction)openTheLastPage:(id)sender;
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename;
@@ -222,7 +217,6 @@
 
 
 - (void)viewDidEndLiveResize:(NSNotification *)aNotification;
-- (void)windowDidResize:(NSNotification *)aNotification;
 
 - (void)openLink:(NSURL *)url;
 
@@ -246,10 +240,8 @@
 - (NSString*)pathFromAliasData:(NSData*)data;
 - (NSData*)aliasDataFromPath:(NSString*)path;
 
-- (AliasHandle)aliasFromPath:(NSString *)fullPath;
-- (NSData *)dataFromAlias:(AliasHandle)alias;
-- (NSString *)pathFromAlias:(AliasHandle)alias;
-- (AliasHandle)aliasFromData:(NSData*)data;
+- (void)migrateStoredFileBookmarks;
+- (void)endSlideshowActivity;
 
 
 - (id)searchFromBookSettings:(NSString*)path key:(NSString**)key;
@@ -264,7 +256,6 @@
 @end
 
 @interface Controller (Input)
-- (void)timeredRemoteButtonEvent:(NSString*)characters;
 - (void)keyAction:(NSEvent*)sender;
 - (BOOL)getKeyAction:(unichar)character mod:(int)cMod mode:(int)mode slideshow:(BOOL)slideshow;
 - (void)mouseAction:(NSEvent*)sender;

@@ -11,6 +11,9 @@
 @interface CustomImageView(private)
 -(void)setUrlRect;
 -(NSURL*)urlWithPoint:(NSPoint)pt;
+@end
+
+@interface CustomImageView ()
 -(void)updateAnimationTimer;
 -(void)stopAnimationTimer;
 -(void)advanceDisplayedAnimation:(NSTimer *)timer;
@@ -163,11 +166,11 @@
 	int button = (int)[event buttonNumber];
 	
 	unsigned int cMod = 100;
-	if (([event modifierFlags] & NSShiftKeyMask))
+	if (([event modifierFlags] & NSEventModifierFlagShift))
 		cMod += 1;
-	if (([event modifierFlags] & NSAlternateKeyMask))
+	if (([event modifierFlags] & NSEventModifierFlagOption))
 		cMod += 2;
-	if (([event modifierFlags] & NSControlKeyMask))
+	if (([event modifierFlags] & NSEventModifierFlagControl))
 		cMod += 4;
 	
 	NSArray *array =[dragScrollDic objectForKey:[NSString stringWithFormat:@"%i",fitScreenMode]];
@@ -1016,7 +1019,7 @@ NSTimeInterval elapsed=0;
 	}
     [image drawInRect:drawRect
               fromRect:NSMakeRect(0,0,[image size].width,[image size].height)
-             operation:NSCompositeSourceOver fraction:1.0];
+             operation:NSCompositingOperationSourceOver fraction:1.0];
 	if (rotateMode!=0) {
 		[transform invert];
 		[transform concat];
@@ -1402,10 +1405,10 @@ NSTimeInterval elapsed=0;
 	}
 	[image2 drawInRect:drawRect2
 			  fromRect:NSMakeRect(0,0,widthValue02,heightValue02)
-			 operation:NSCompositeSourceOver fraction:1.0];
+			 operation:NSCompositingOperationSourceOver fraction:1.0];
 	[image1 drawInRect:drawRect1
 			  fromRect:NSMakeRect(0,0,widthValue01,heightValue01)
-			 operation:NSCompositeSourceOver fraction:1.0];
+			 operation:NSCompositingOperationSourceOver fraction:1.0];
 	/*
 	if( [NSObject respondsToSelector:@selector(finalize)] ){
 		if ([target readFromLeft]) {
@@ -1535,11 +1538,10 @@ NSTimeInterval elapsed=0;
 		[self resetCursorRects];
 	} else {
 		lensWindow = [[NSWindow alloc] initWithContentRect:NSMakeRect(0,0,lensSize,lensSize)
-												 styleMask:NSBorderlessWindowMask
+												 styleMask:NSWindowStyleMaskBorderless
 												   backing:NSBackingStoreBuffered
 													 defer:NO];
 		[lensWindow setReleasedWhenClosed:YES];
-		[lensWindow setOneShot:YES];
 		[lensWindow setBackgroundColor:[NSColor clearColor]];
 		[lensWindow setOpaque:NO];
 		[lensWindow setIgnoresMouseEvents:YES];
@@ -1697,7 +1699,7 @@ NSTimeInterval elapsed=0;
 			 b = (float)*(sample + 2);
 		 }
 		 [[NSColor colorWithCalibratedRed:r/255 green:g/255 blue:b/255 alpha:1.0] set];
-		 NSRectFillUsingOperation(leftRect,NSCompositeSourceOver);
+		 NSRectFillUsingOperation(leftRect,NSCompositingOperationSourceOver);
 		 
 		 
 		 repArray = [right representations];
@@ -1724,7 +1726,7 @@ NSTimeInterval elapsed=0;
 			 b = (float)*(sample + 2);
 		 }
 		 [[NSColor colorWithCalibratedRed:r/255 green:g/255 blue:b/255 alpha:1.0] set];
-		 NSRectFillUsingOperation(rightRect,NSCompositeSourceOver);
+		 NSRectFillUsingOperation(rightRect,NSCompositingOperationSourceOver);
 	 } else {
 		 NSArray *repArray = [left representations];
 		 int i;
@@ -1750,7 +1752,7 @@ NSTimeInterval elapsed=0;
 			 b = (float)*(sample + 2);
 		 }
 		 [[NSColor colorWithCalibratedRed:r/255 green:g/255 blue:b/255 alpha:1.0] set];
-		 NSRectFillUsingOperation(leftRect,NSCompositeSourceOver);
+		 NSRectFillUsingOperation(leftRect,NSCompositingOperationSourceOver);
 		 x = w-1;
 		 y = h/2;
 		 if( x < w && w > 0 && y < h && y > 0 ) {
@@ -1761,7 +1763,7 @@ NSTimeInterval elapsed=0;
 			 b = (float)*(sample + 2);
 		 }
 		 [[NSColor colorWithCalibratedRed:r/255 green:g/255 blue:b/255 alpha:1.0] set];
-		 NSRectFillUsingOperation(rightRect,NSCompositeSourceOver);
+		 NSRectFillUsingOperation(rightRect,NSCompositingOperationSourceOver);
 	 }
  }*/
 /*
@@ -1795,7 +1797,7 @@ NSTimeInterval elapsed=0;
     [filter setValue:ciImage forKey:@"inputImage"];
     CIImage *outputImage = [filter valueForKey:@"outputImage"];
     
-	[outputImage drawInRect:[self bounds] fromRect:[self bounds] operation:NSCompositeSourceOver fraction:1.0];
+	[outputImage drawInRect:[self bounds] fromRect:[self bounds] operation:NSCompositingOperationSourceOver fraction:1.0];
 }
 
 -(void)drawCIImage:(NSImage *)image inRect:(CGRect)inRect fromRect:(CGRect)fromRect

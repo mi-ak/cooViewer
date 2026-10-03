@@ -485,8 +485,8 @@
 /* Class = "NSBox"; title = "View"; ObjectID = "2037"; */
 "2037.title" = "View";
 
-/* Class = "NSTabViewItem"; label = "Keyboard & AppleRemote"; ObjectID = "2067"; */
-"2067.label" = "Keyboard & AppleRemote";
+/* Class = "NSTabViewItem"; label = "Keyboard"; ObjectID = "2067"; */
+"2067.label" = "Keyboard";
 
 /* Class = "NSTabViewItem"; label = "Mouse"; ObjectID = "2068"; */
 "2068.label" = "Mouse";
@@ -1247,12 +1247,6 @@
 /* Class = "NSTextFieldCell"; title = "Cache :"; ObjectID = "4307"; */
 "4307.title" = "Cache :";
 
-/* Class = "NSButtonCell"; title = "Change Creator"; ObjectID = "4308"; */
-"4308.title" = "Change Creator";
-
-/* Class = "NSButtonCell"; title = "Set \"Open with\" to cooViewer"; ObjectID = "4309"; */
-"4309.title" = "Set \"Open with\" to cooViewer";
-
 /* Class = "NSTextFieldCell"; title = "Open link in pdf in default browser:"; ObjectID = "4310"; */
 "4310.title" = "Open link in pdf in default browser:";
 
@@ -1264,9 +1258,6 @@
 
 /* Class = "NSButtonCell"; title = "Fit original size window to image size"; ObjectID = "4315"; */
 "4315.title" = "Fit original size window to image size";
-
-/* Class = "NSButtonCell"; title = "Don't hide menu bar"; ObjectID = "4316"; */
-"4316.title" = "Don't hide menu bar";
 
 /* Class = "NSButtonCell"; title = "Show thumbnail view on open"; ObjectID = "4317"; */
 "4317.title" = "Show thumbnail view on open";

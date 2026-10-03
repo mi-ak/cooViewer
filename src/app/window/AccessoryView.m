@@ -1,3 +1,4 @@
+#import "COArchivedSettings.h"
 //
 //  AccessoryView.m
 //  cooViewer
@@ -92,49 +93,49 @@ NSRect COIntRect(NSRect aRect)
 	
 
 	if ([defaults objectForKey:@"PageBarFontColor"]) {
-		pageBarFontColor = [[NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"PageBarFontColor"]] retain];
+		pageBarFontColor = [COReadArchivedSetting(defaults, @"PageBarFontColor", [NSColor class]) retain];
 	} else {
 		pageBarFontColor = [[NSColor whiteColor] retain];
 	}
 	if ([defaults objectForKey:@"PageBarTextFont"]) {
-		pageBarFont = [[NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"PageBarTextFont"]] retain];
+		pageBarFont = [COReadArchivedSetting(defaults, @"PageBarTextFont", [NSFont class]) retain];
 	} else {
 		pageBarFont = [[NSFont userFontOfSize:14] retain];
 	}	
 	if ([defaults objectForKey:@"PageBarBGColor"]) {
-		pageBarBGColor = [[NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"PageBarBGColor"]] retain];
+		pageBarBGColor = [COReadArchivedSetting(defaults, @"PageBarBGColor", [NSColor class]) retain];
 	} else {
 		pageBarBGColor = [[[NSColor blackColor] colorWithAlphaComponent:0.8] retain];
 	}
 	if ([defaults objectForKey:@"PageBarBorderColor"]) {
-		pageBarBorderColor = [[NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"PageBarBorderColor"]] retain];
+		pageBarBorderColor = [COReadArchivedSetting(defaults, @"PageBarBorderColor", [NSColor class]) retain];
 	} else {
 		pageBarBorderColor = [[NSColor whiteColor] retain];
 	}
 	if ([defaults objectForKey:@"PageBarReadedColor"]) {
-		pageBarReadedColor = [[NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"PageBarReadedColor"]] retain];
+		pageBarReadedColor = [COReadArchivedSetting(defaults, @"PageBarReadedColor", [NSColor class]) retain];
 	} else {
 		pageBarReadedColor = [[[NSColor whiteColor] colorWithAlphaComponent:0.5] retain];
 	}
 	
 
 	if ([defaults objectForKey:@"TextFont"]) {
-		textFont = [[NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"TextFont"]] retain];
+		textFont = [COReadArchivedSetting(defaults, @"TextFont", [NSFont class]) retain];
 	} else {
 		textFont = [[NSFont controlContentFontOfSize:11] retain];
 	}
 	if ([defaults objectForKey:@"TextColor"]) {
-		textFontColor = [[NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"TextColor"]] retain];
+		textFontColor = [COReadArchivedSetting(defaults, @"TextColor", [NSColor class]) retain];
 	} else {
 		textFontColor = [[NSColor whiteColor] retain];
 	}
 	if ([defaults objectForKey:@"TextBGColor"]) {
-		textBGColor = [[NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"TextBGColor"]] retain];
+		textBGColor = [COReadArchivedSetting(defaults, @"TextBGColor", [NSColor class]) retain];
 	} else {
 		textBGColor = [[[NSColor blackColor] colorWithAlphaComponent:0.8] retain];
 	}
 	if ([defaults objectForKey:@"TextBorderColor"]) {
-		textBorderColor = [[NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:@"TextBorderColor"]] retain];
+		textBorderColor = [COReadArchivedSetting(defaults, @"TextBorderColor", [NSColor class]) retain];
 	} else {
 		textBorderColor = [[NSColor whiteColor] retain];
 	}
@@ -166,7 +167,7 @@ NSRect COIntRect(NSRect aRect)
 	
 	
 	if ([textBGColor isEqualTo:[NSColor clearColor]]) {
-		NSColor *shadowColor = [textFontColor colorUsingColorSpaceName:NSCalibratedWhiteColorSpace];
+		NSColor *shadowColor = [textFontColor colorUsingColorSpace:[NSColorSpace genericGrayColorSpace]];
 		CGFloat white,alpha;
 		[shadowColor getWhite:&white alpha:&alpha];
 		NSShadow *shadow = [[NSShadow alloc] init];
@@ -213,7 +214,6 @@ NSRect COIntRect(NSRect aRect)
 }
 - (void)mouseMoved:(NSEvent *)theEvent
 {
-    NSDisableScreenUpdates();
     NSPoint lensOldPoint;
     if ([controller indicator] && ![imageView loupeIsVisible]) {
         lensOldPoint = [[self window] mouseLocationOutsideOfEventStream];
@@ -247,7 +247,6 @@ NSRect COIntRect(NSRect aRect)
             }
         }
     }
-    NSEnableScreenUpdates();
 }
 - (void)drawPageBarBubble
 {
@@ -277,7 +276,7 @@ NSRect COIntRect(NSRect aRect)
 			[attr setObject:pageBarFont forKey:NSFontAttributeName];
 			
 			if ([pageBarBGColor isEqualTo:[NSColor clearColor]]) {
-				NSColor *shadowColor = [pageBarFontColor colorUsingColorSpaceName:NSCalibratedWhiteColorSpace];
+				NSColor *shadowColor = [pageBarFontColor colorUsingColorSpace:[NSColorSpace genericGrayColorSpace]];
 				CGFloat white,alpha;
 				[shadowColor getWhite:&white alpha:&alpha];
 				NSShadow *shadow = [[NSShadow alloc] init];
@@ -419,7 +418,7 @@ NSRect COIntRect(NSRect aRect)
 				}
 				[thumbnail drawInRect:imageRect
 							 fromRect:NSMakeRect(0,0,widthValue,heightValue)
-							operation:NSCompositeSourceOver fraction:1.0];
+							operation:NSCompositingOperationSourceOver fraction:1.0];
 				[string drawAtPoint:pt];
 			} else {
 				switch (pageBarPosition) {
@@ -569,7 +568,7 @@ NSRect COIntRect(NSRect aRect)
 				[NSGraphicsContext saveGraphicsState]; 		
 				[base addClip]; 
 				[pageBarReadedColor set];
-				NSRectFillUsingOperation(slice,NSCompositeSourceOver);
+				NSRectFillUsingOperation(slice,NSCompositingOperationSourceOver);
 				[NSGraphicsContext restoreGraphicsState]; 		
 			}
 			if (![pageBarBorderColor isEqualTo:[NSColor clearColor]]) {

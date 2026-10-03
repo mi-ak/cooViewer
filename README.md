@@ -20,7 +20,7 @@ xcodebuild -project cooViewer.xcodeproj -scheme cooViewer \
 sh test/run_tests.sh
 ```
 
-このテストはアーカイブの読み込み、階層付きファイルの展開、不正な展開先の拒否、破損したアーカイブによる既存ファイルの上書き防止を確認します。
+このテストはアーカイブの読み込みと安全な展開、旧形式の設定とファイルエイリアスの移行、ファイル名の自然順ソートを確認します。
 
 ## ディレクトリ
 
@@ -38,5 +38,5 @@ sh test/run_tests.sh
 
 ## ライセンス
 
-cooViewer は MIT ライセンスです。[本体のライセンス](docs/licenses/Licence.txt) と [Remote Control Wrapper のライセンス](docs/licenses/Licence_RemoteControlWrapper.txt) を参照してください。
-両ライセンス文書は生成されるアプリにも同梱されます。
+cooViewer は MIT ライセンスです。[本体のライセンス](docs/licenses/Licence.txt) を参照してください。
+ライセンス文書は生成されるアプリにも同梱されます。
