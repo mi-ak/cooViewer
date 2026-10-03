@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8D1107260486CEB800E47090"
-               BuildableName = "cooViewer.app"
-               BlueprintName = "cooViewer"
-               ReferencedContainer = "container:cooViewer.xcodeproj">
+               BuildableName = "coo2.app"
+               BlueprintName = "coo2"
+               ReferencedContainer = "container:coo2.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8D1107260486CEB800E47090"
-            BuildableName = "cooViewer.app"
-            BlueprintName = "cooViewer"
-            ReferencedContainer = "container:cooViewer.xcodeproj">
+            BuildableName = "coo2.app"
+            BlueprintName = "coo2"
+            ReferencedContainer = "container:coo2.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8D1107260486CEB800E47090"
-            BuildableName = "cooViewer.app"
-            BlueprintName = "cooViewer"
-            ReferencedContainer = "container:cooViewer.xcodeproj">
+            BuildableName = "coo2.app"
+            BlueprintName = "coo2"
+            ReferencedContainer = "container:coo2.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

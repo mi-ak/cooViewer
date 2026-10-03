@@ -159,7 +159,7 @@
 - (void)openFromOpenRecent:(id)sender;
 - (void)openPage:(int)page last:(BOOL)last;
 
-- (void)askInArchivePassword:(COImageLoader*)loader;
+- (void)askForPassword:(COImageLoader*)loader;
 - (IBAction)sheetCancel:(id)sender;
 - (IBAction)sheetOk:(id)sender;
 

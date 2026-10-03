@@ -2,6 +2,7 @@
 #import <ImageIO/ImageIO.h>
 
 @class COPDFImageRep;
+@class PDFDocument;
 
 @interface COImageLoader : NSObject {
 	BOOL inTempDir;
@@ -31,6 +32,7 @@
 	
 	
 	COPDFImageRep	*pdfRep;
+	PDFDocument *pdfDocument;
 }
 +(NSArray *)fileTypes;
 +(NSArray *)archiveTypes;

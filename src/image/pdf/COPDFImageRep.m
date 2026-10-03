@@ -39,17 +39,21 @@
 -(NSInteger)pixelsWide {return [self size].width;}
 -(NSInteger)pixelsHigh{return [self size].height;}
 
-+ (id)imageRepWithContentsOfFile:(NSString *)filename
++ (instancetype)imageRepWithContentsOfFile:(NSString *)filename
 {
-	id rep = [super imageRepWithContentsOfFile:filename];
-	
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1040
-	if([NSObject respondsToSelector:@selector(finalize)]){
-		NSData *data = [NSData dataWithContentsOfFile:filename];
-		
+	NSData *data = [NSData dataWithContentsOfFile:filename options:NSDataReadingMappedIfSafe error:nil];
+	return [self imageRepWithData:data];
+}
+
++ (instancetype)imageRepWithData:(NSData *)data
+{
+	if (!data) return nil;
+	COPDFImageRep *rep = [[[self alloc] initWithData:data] autorelease];
+	if (!rep) return nil;
+	PDFDocument *pdf = [[[PDFDocument alloc] initWithData:data] autorelease];
+	if (pdf && ![pdf isLocked]) {
 		PDFPage		*page;
 		NSArray		*annotations;
-		PDFDocument *pdf = [[[PDFDocument alloc] initWithData:data] autorelease];
 		
 		NSMutableArray *tmpArray = [[NSMutableArray alloc] init];
 		int pageIndex;
@@ -87,23 +91,19 @@
 		[rep setLinkList:tmpArray];
 		[tmpArray release];
 	}
-#endif
 	
 	return rep;
 }
 
 -(void)setLinkList:(NSArray*)array;
 {
+	[linkList release];
 	linkList = [array retain];
 }
 
 -(NSArray*)linkListAtPage:(int) p
 {
-    if (p<0) {
-        p = 0;
-    } else if (p>=[linkList count]) {
-        p = (int)[linkList count]-1;
-    }
+	if (p < 0 || p >= [linkList count]) return nil;
 	return [linkList objectAtIndex:p];
 }
 @end

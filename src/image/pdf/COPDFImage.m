@@ -9,8 +9,18 @@
 {
 	self = [super init];
     if (self) {
-		pdfRep = [rep retain];
-		page = p;
+		if (!rep || p < 0 || p >= [rep pageCount]) {
+			[self release];
+			return nil;
+		}
+		// NSPDFImageRep stores the selected page as mutable state. Each image
+		// needs its own rep because thumbnails and page prefetch render in parallel.
+		pdfRep = [[COPDFImageRep alloc] initWithData:[rep PDFRepresentation]];
+		if (!pdfRep || p >= [pdfRep pageCount]) {
+			[self release];
+			return nil;
+		}
+		[pdfRep setCurrentPage:p];
 		linkList = nil;
 		
 		image = [[NSImage alloc] initWithSize:[pdfRep size]];
@@ -32,7 +42,6 @@
 
 - (NSArray *)representations
 {
-	[pdfRep setCurrentPage:page];
 	return [NSArray arrayWithObject:pdfRep];
 }
 
@@ -43,13 +52,11 @@
 
 - (NSSize)size
 {
-	[pdfRep setCurrentPage:page];
 	return [pdfRep size];
 }
 
 - (void)drawInRect:(NSRect)dstRect fromRect:(NSRect)srcRect operation:(NSCompositingOperation)op fraction:(CGFloat)delta
 {
-	[pdfRep setCurrentPage:page];
 	//[pdfRep drawInRect:dstRect];
 	if (NSEqualSizes([pdfRep size],srcRect.size) || NSIsEmptyRect(srcRect)) {
 		[pdfRep drawInRect:dstRect];
@@ -63,7 +70,6 @@
 
 - (void)drawAtPoint:(NSPoint)point fromRect:(NSRect)srcRect operation:(NSCompositingOperation)op fraction:(CGFloat)delta
 {
-	[pdfRep setCurrentPage:page];
     [image setSize:[pdfRep size]];
 	[image drawAtPoint:point fromRect:srcRect operation:op fraction:delta];
 }

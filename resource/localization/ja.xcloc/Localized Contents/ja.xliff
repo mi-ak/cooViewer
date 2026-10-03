@@ -31,19 +31,19 @@
         <note>Class = "NSMenu"; title = "MainMenu"; ObjectID = "29";</note>
       </trans-unit>
       <trans-unit id="56.title" xml:space="preserve">
-        <source>cooViewer</source>
-        <target>cooViewer</target>
-        <note>Class = "NSMenuItem"; title = "cooViewer"; ObjectID = "56";</note>
+        <source>coo2</source>
+        <target>coo2</target>
+        <note>Class = "NSMenuItem"; title = "coo2"; ObjectID = "56";</note>
       </trans-unit>
       <trans-unit id="57.title" xml:space="preserve">
-        <source>cooViewer</source>
-        <target>cooViewer</target>
-        <note>Class = "NSMenu"; title = "cooViewer"; ObjectID = "57";</note>
+        <source>coo2</source>
+        <target>coo2</target>
+        <note>Class = "NSMenu"; title = "coo2"; ObjectID = "57";</note>
       </trans-unit>
       <trans-unit id="58.title" xml:space="preserve">
-        <source>About cooViewer</source>
-        <target>cooViewer について</target>
-        <note>Class = "NSMenuItem"; title = "About cooViewer"; ObjectID = "58";</note>
+        <source>About coo2</source>
+        <target>coo2 について</target>
+        <note>Class = "NSMenuItem"; title = "About coo2"; ObjectID = "58";</note>
       </trans-unit>
       <trans-unit id="72.title" xml:space="preserve">
         <source>Open...</source>
@@ -81,14 +81,14 @@
         <note>Class = "NSMenuItem"; title = "Services"; ObjectID = "131";</note>
       </trans-unit>
       <trans-unit id="134.title" xml:space="preserve">
-        <source>Hide cooViewer</source>
-        <target>cooViewer を隠す</target>
-        <note>Class = "NSMenuItem"; title = "Hide cooViewer"; ObjectID = "134";</note>
+        <source>Hide coo2</source>
+        <target>coo2 を隠す</target>
+        <note>Class = "NSMenuItem"; title = "Hide coo2"; ObjectID = "134";</note>
       </trans-unit>
       <trans-unit id="136.title" xml:space="preserve">
-        <source>Quit cooViewer</source>
-        <target>cooViewer を終了</target>
-        <note>Class = "NSMenuItem"; title = "Quit cooViewer"; ObjectID = "136";</note>
+        <source>Quit coo2</source>
+        <target>coo2 を終了</target>
+        <note>Class = "NSMenuItem"; title = "Quit coo2"; ObjectID = "136";</note>
       </trans-unit>
       <trans-unit id="145.title" xml:space="preserve">
         <source>Hide Others</source>

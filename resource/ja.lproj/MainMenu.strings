@@ -13,14 +13,14 @@
 /* Class = "NSMenu"; title = "MainMenu"; ObjectID = "29"; */
 "29.title" = "MainMenu";
 
-/* Class = "NSMenuItem"; title = "cooViewer"; ObjectID = "56"; */
-"56.title" = "cooViewer";
+/* Class = "NSMenuItem"; title = "coo2"; ObjectID = "56"; */
+"56.title" = "coo2";
 
-/* Class = "NSMenu"; title = "cooViewer"; ObjectID = "57"; */
-"57.title" = "cooViewer";
+/* Class = "NSMenu"; title = "coo2"; ObjectID = "57"; */
+"57.title" = "coo2";
 
-/* Class = "NSMenuItem"; title = "About cooViewer"; ObjectID = "58"; */
-"58.title" = "cooViewer について";
+/* Class = "NSMenuItem"; title = "About coo2"; ObjectID = "58"; */
+"58.title" = "coo2 について";
 
 /* Class = "NSMenuItem"; title = "Open..."; ObjectID = "72"; */
 "72.title" = "開く...";
@@ -43,11 +43,11 @@
 /* Class = "NSMenuItem"; title = "Services"; ObjectID = "131"; */
 "131.title" = "サービス";
 
-/* Class = "NSMenuItem"; title = "Hide cooViewer"; ObjectID = "134"; */
-"134.title" = "cooViewer を隠す";
+/* Class = "NSMenuItem"; title = "Hide coo2"; ObjectID = "134"; */
+"134.title" = "coo2 を隠す";
 
-/* Class = "NSMenuItem"; title = "Quit cooViewer"; ObjectID = "136"; */
-"136.title" = "cooViewer を終了";
+/* Class = "NSMenuItem"; title = "Quit coo2"; ObjectID = "136"; */
+"136.title" = "coo2 を終了";
 
 /* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
 "145.title" = "ほかを隠す";

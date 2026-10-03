@@ -1021,24 +1021,18 @@ static BOOL COConfirmAction(NSString *title, NSString *message)
 
 	
 }
-- (void)askInArchivePassword:(COImageLoader*)loader
+- (void)askForPassword:(COImageLoader*)loader
 {
-	int passPanelResult;
 	[passPanel setTitle:[[loader displayPath] lastPathComponent]];
-	passPanelResult = (int)[NSApp runModalForWindow:passPanel];
-	[passPanel orderOut:self];
-	if (passPanelResult == DIALOG_CANCEL) {
-		[passPanel setTitle:@"Password"];
-		return;
+	[passTextField setStringValue:@""];
+	while (YES) {
+		int passPanelResult = (int)[NSApp runModalForWindow:passPanel];
+		[passPanel orderOut:self];
+		if (passPanelResult != DIALOG_OK || [loader checkAndSetPassword:[passTextField stringValue]]) break;
+		[passTextField setStringValue:@""];
 	}
-	if (passPanelResult == DIALOG_OK) {
-		[passPanel setTitle:@"Password"];
-		if (![loader checkAndSetPassword:[passTextField stringValue]]) {
-			//NSLog(@"dialog_ok wrongPass");
-			[self askInArchivePassword:loader];
-			return;
-		}
-	}
+	[passTextField setStringValue:@""];
+	[passPanel setTitle:@"Password"];
 }
 - (IBAction)sheetOk:(id)sender{[NSApp stopModalWithCode:DIALOG_OK];}
 - (IBAction)sheetCancel:(id)sender{[NSApp stopModalWithCode:DIALOG_CANCEL];}

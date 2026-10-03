@@ -14,14 +14,14 @@
 /* Class = "NSMenu"; title = "MainMenu"; ObjectID = "29"; */
 "29.title" = "MainMenu";
 
-/* Class = "NSMenuItem"; title = "cooViewer"; ObjectID = "56"; */
-"56.title" = "cooViewer";
+/* Class = "NSMenuItem"; title = "coo2"; ObjectID = "56"; */
+"56.title" = "coo2";
 
-/* Class = "NSMenu"; title = "cooViewer"; ObjectID = "57"; */
-"57.title" = "cooViewer";
+/* Class = "NSMenu"; title = "coo2"; ObjectID = "57"; */
+"57.title" = "coo2";
 
-/* Class = "NSMenuItem"; title = "About cooViewer"; ObjectID = "58"; */
-"58.title" = "About cooViewer";
+/* Class = "NSMenuItem"; title = "About coo2"; ObjectID = "58"; */
+"58.title" = "About coo2";
 
 /* Class = "NSMenuItem"; title = "Open..."; ObjectID = "72"; */
 "72.title" = "Open...";
@@ -44,11 +44,11 @@
 /* Class = "NSMenuItem"; title = "Services"; ObjectID = "131"; */
 "131.title" = "Services";
 
-/* Class = "NSMenuItem"; title = "Hide cooViewer"; ObjectID = "134"; */
-"134.title" = "Hide cooViewer";
+/* Class = "NSMenuItem"; title = "Hide coo2"; ObjectID = "134"; */
+"134.title" = "Hide coo2";
 
-/* Class = "NSMenuItem"; title = "Quit cooViewer"; ObjectID = "136"; */
-"136.title" = "Quit cooViewer";
+/* Class = "NSMenuItem"; title = "Quit coo2"; ObjectID = "136"; */
+"136.title" = "Quit coo2";
 
 /* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
 "145.title" = "Hide Others";

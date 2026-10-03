@@ -7,7 +7,6 @@
 @interface COPDFImage : NSImage {
 	COPDFImageRep *pdfRep;
 	NSImage *image;
-	int page;
 	NSArray *linkList;
 }
 

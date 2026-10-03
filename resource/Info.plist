@@ -100,13 +100,17 @@
 			<key>LSItemContentTypes</key><array><string>public.directory</string></array>
 		</dict>
 	</array>
-	<key>CFBundleExecutable</key><string>cooViewer</string>
+	<key>CFBundleExecutable</key><string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleDisplayName</key><string>coo2</string>
+	<key>CFBundleName</key><string>coo2</string>
 	<key>CFBundleIconName</key><string>AppIcon</string>
 	<key>CFBundleIdentifier</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
 	<key>CFBundlePackageType</key><string>APPL</string>
-	<key>CFBundleSignature</key><string>COvw</string>
+	<key>CFBundleSignature</key><string>C2vw</string>
+	<key>CFBundleShortVersionString</key><string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>NSHumanReadableCopyright</key><string>Copyright © 2005- coo. coo2 is an independent fork of cooViewer.</string>
 	<key>NSMainNibFile</key><string>MainMenu</string>
 	<key>NSPrincipalClass</key><string>NSApplication</string>
 </dict>

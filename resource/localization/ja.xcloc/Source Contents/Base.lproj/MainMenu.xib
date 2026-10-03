@@ -47,10 +47,10 @@
         </window>
         <menu title="MainMenu" systemMenu="main" id="29" userLabel="MainMenu">
             <items>
-                <menuItem title="cooViewer" id="56">
-                    <menu key="submenu" title="cooViewer" systemMenu="apple" id="57">
+                <menuItem title="coo2" id="56">
+                    <menu key="submenu" title="coo2" systemMenu="apple" id="57">
                         <items>
-                            <menuItem title="About cooViewer" id="58">
+                            <menuItem title="About coo2" id="58">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="orderFrontStandardAboutPanel:" target="-2" id="980"/>
@@ -73,7 +73,7 @@
                             <menuItem isSeparatorItem="YES" id="144">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Hide cooViewer" keyEquivalent="h" id="134">
+                            <menuItem title="Hide coo2" keyEquivalent="h" id="134">
                                 <connections>
                                     <action selector="hide:" target="-2" id="152"/>
                                 </connections>
@@ -92,7 +92,7 @@
                             <menuItem isSeparatorItem="YES" id="149">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Quit cooViewer" keyEquivalent="q" id="136">
+                            <menuItem title="Quit coo2" keyEquivalent="q" id="136">
                                 <connections>
                                     <action selector="terminate:" target="-2" id="139"/>
                                 </connections>

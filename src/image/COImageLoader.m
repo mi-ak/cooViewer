@@ -345,11 +345,13 @@ static NSArray *_COImageLoader_imageFileTypes=nil;
 		contentPathDic = [[NSMutableDictionary alloc] init];
 		rawContentPathArray = [[NSMutableArray alloc] init];
 		pdfRep = nil;
+		pdfDocument = nil;
 		
 		[self content];
 	}
-	if ([self itemCount]==0) {
-		[contentPathArray addObject:[[NSBundle mainBundle] pathForResource:@"empty" ofType:@"png"]];
+	if ([self itemCount]==0 && mode >= 0) {
+		NSString *emptyPath = [[NSBundle mainBundle] pathForResource:@"empty" ofType:@"png"];
+		if (emptyPath) [contentPathArray addObject:emptyPath];
 	}
     return self;	
 }
@@ -377,7 +379,7 @@ static NSArray *_COImageLoader_imageFileTypes=nil;
 	if(contentPathDic)[contentPathDic release];
 	if(filterArray)[filterArray release];
 	if(pdfRep)[pdfRep release];
-	//if(mode==4)CGPDFDocumentRelease(pdfDocument);
+	if(pdfDocument)[pdfDocument release];
 	
 	[super dealloc];
 }
@@ -464,7 +466,8 @@ static NSArray *_COImageLoader_imageFileTypes=nil;
 		}
 	}
 	if (mode==4) {
-		return [[[COPDFImage alloc] initWithPDFRep:pdfRep page:index] autorelease];
+		NSImage *image = [[[COPDFImage alloc] initWithPDFRep:pdfRep page:index] autorelease];
+		if (image) return image;
 	} else if(mode==2) {
 		NSString *rawName = [contentPathDic objectForKey:[contentPathArray objectAtIndex:index]];
 		NSImage *image = nil;
@@ -674,12 +677,29 @@ static NSArray *_COImageLoader_imageFileTypes=nil;
 {
 	if (mode==2)
 		return [archiveContainer crypted];
+	if (mode==4)
+		return [pdfDocument isEncrypted];
 	
 	return NO;
 }
 
 - (void)setPassword:(NSString *)inStr
 {
+	if (mode==4) {
+		if (!pdfDocument || ![pdfDocument unlockWithPassword:(inStr ? inStr : @"")]) return;
+		// Keep the unlocked representation in memory. PDFDocument's default
+		// dataRepresentation preserves the original password requirement.
+		NSData *data = [pdfDocument dataRepresentationWithOptions:
+			[NSDictionary dictionaryWithObjectsAndKeys:@"", PDFDocumentOwnerPasswordOption,
+				@"", PDFDocumentUserPasswordOption, nil]];
+		COPDFImageRep *unlockedRep = data ? [COPDFImageRep imageRepWithData:data] : nil;
+		if (unlockedRep && [unlockedRep pageCount] == [pdfDocument pageCount] &&
+			[unlockedRep size].width > 0 && [unlockedRep size].height > 0) {
+			[pdfRep release];
+			pdfRep = [unlockedRep retain];
+		}
+		return;
+	}
 	if (mode==2) {
 		if(password)[password release];
 		password=nil;
@@ -692,6 +712,7 @@ static NSArray *_COImageLoader_imageFileTypes=nil;
 
 - (BOOL)checkPassword
 {
+	if (mode==4) return pdfDocument && ![pdfDocument isLocked] && pdfRep != nil;
 	if (rightPassward || !(mode==2) || ![self crypted]) return YES;
 	if (password==nil) return NO;
 	
@@ -737,9 +758,21 @@ static NSArray *_COImageLoader_imageFileTypes=nil;
 	NSMutableArray *pathArray = [NSMutableArray array];
 	if ([[filePath pathExtension] compare:@"pdf" options:NSCaseInsensitiveSearch] == NSOrderedSame) {
 		mode=4;
-		pdfRep = [(COPDFImageRep *)[COPDFImageRep imageRepWithContentsOfFile:filePath] retain];
-		int pages = (int)[pdfRep pageCount];
-		
+		NSData *data = [NSData dataWithContentsOfFile:filePath options:NSDataReadingMappedIfSafe error:nil];
+		pdfDocument = [[PDFDocument alloc] initWithData:data];
+		if ([pdfDocument isLocked] && controller) [controller askForPassword:self];
+		int pages = (int)[pdfDocument pageCount];
+		if (!pdfDocument || pages < 1) {
+			mode = -1;
+			return;
+		}
+		if (![pdfDocument isLocked] && !pdfRep) {
+			pdfRep = [[COPDFImageRep imageRepWithData:data] retain];
+			if (!pdfRep || [pdfRep size].width <= 0 || [pdfRep size].height <= 0) {
+				mode = -1;
+				return;
+			}
+		}
 		int i;
 		for (i=0;pages>i;i++) {
 			[contentPathArray addObject:[NSString stringWithFormat:@"%@/%i.pdf",filePath,i+1]];
@@ -846,7 +879,7 @@ static NSArray *_COImageLoader_imageFileTypes=nil;
 		if (password) [archiveContainer setPassword:password];
 	}
 	
-	if (![self checkPassword]) [controller askInArchivePassword:self];	//pass聞きに行く
+	if (![self checkPassword]) [controller askForPassword:self];	//pass聞きに行く
 	if (![self checkPassword]) return NO;	//諦めた
 	
 	if ([self crypted] && !rightPassward) {

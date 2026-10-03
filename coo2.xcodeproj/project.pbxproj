@@ -98,7 +98,7 @@
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		32CA4F630368D1EE00C91783 /* cooViewer_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cooViewer_Prefix.pch; sourceTree = "<group>"; };
+		32CA4F630368D1EE00C91783 /* coo2_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = coo2_Prefix.pch; sourceTree = "<group>"; };
 		372911571316C60C0040B910 /* empty.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = empty.png; sourceTree = "<group>"; };
 		37AD8315131AA9E600F0123C /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = /System/Library/Frameworks/Quartz.framework; sourceTree = "<absolute>"; };
 		C0A4E2012A00000100000001 /* COArchiveReader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = COArchiveReader.m; sourceTree = "<group>"; };
@@ -174,7 +174,7 @@
 		76F33A16083727A90099A43D /* broken.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = broken.png; sourceTree = "<group>"; };
 		76FE6986082E4C6E00283560 /* ThumbnailController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThumbnailController.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* cooViewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = cooViewer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* coo2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = coo2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A31C5A9723CA3D6300DD4E70 /* FilterPanelController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FilterPanelController.h; sourceTree = "<group>"; };
 		A31C5A9823CA3D6300DD4E70 /* FilterPanelController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FilterPanelController.m; sourceTree = "<group>"; };
 		A3582E2123BBB03500DCC566 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -235,12 +235,12 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* cooViewer.app */,
+				8D1107320486CEB800E47090 /* coo2.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		29B97314FDCFA39411CA2CEA /* cooViewer */ = {
+		29B97314FDCFA39411CA2CEA /* coo2 */ = {
 			isa = PBXGroup;
 			children = (
 				080E96DDFE201D6D7F000001 /* Classes */,
@@ -249,13 +249,13 @@
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 			);
-			name = cooViewer;
+			name = coo2;
 			sourceTree = "<group>";
 		};
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				32CA4F630368D1EE00C91783 /* cooViewer_Prefix.pch */,
+				32CA4F630368D1EE00C91783 /* coo2_Prefix.pch */,
 				29B97316FDCFA39411CA2CEA /* main.m */,
 			);
 			name = "Entry Point";
@@ -514,9 +514,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		8D1107260486CEB800E47090 /* cooViewer */ = {
+		8D1107260486CEB800E47090 /* coo2 */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 762F248A0899B2FD00419EAA /* Build configuration list for PBXNativeTarget "cooViewer" */;
+			buildConfigurationList = 762F248A0899B2FD00419EAA /* Build configuration list for PBXNativeTarget "coo2" */;
 			buildPhases = (
 				766DEF5607E5CDD80039AAD0 /* Headers */,
 				8D11072C0486CEB800E47090 /* Sources */,
@@ -527,10 +527,10 @@
 			);
 			dependencies = (
 			);
-			name = cooViewer;
+			name = coo2;
 			productInstallPath = "$(HOME)/Applications";
-			productName = cooViewer;
-			productReference = 8D1107320486CEB800E47090 /* cooViewer.app */;
+			productName = coo2;
+			productReference = 8D1107320486CEB800E47090 /* coo2.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -541,7 +541,7 @@
 			attributes = {
 				LastUpgradeCheck = 1130;
 			};
-			buildConfigurationList = 762F248E0899B2FD00419EAA /* Build configuration list for PBXProject "cooViewer" */;
+			buildConfigurationList = 762F248E0899B2FD00419EAA /* Build configuration list for PBXProject "coo2" */;
 			compatibilityVersion = "Xcode 3.1";
 			developmentRegion = en;
 			hasScannedForEncodings = 1;
@@ -550,11 +550,11 @@
 				Base,
 				ja,
 			);
-			mainGroup = 29B97314FDCFA39411CA2CEA /* cooViewer */;
+			mainGroup = 29B97314FDCFA39411CA2CEA /* coo2 */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8D1107260486CEB800E47090 /* cooViewer */,
+				8D1107260486CEB800E47090 /* coo2 */,
 			);
 		};
 /* End PBXProject section */
@@ -700,7 +700,8 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1.2b25;
+				CURRENT_PROJECT_VERSION = 1;
+				MARKETING_VERSION = 0.1.0;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
 					/Library/Frameworks,
@@ -711,7 +712,7 @@
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = src/cooViewer_Prefix.pch;
+				GCC_PREFIX_HEADER = src/coo2_Prefix.pch;
 				GCC_WARN_ABOUT_RETURN_TYPE = NO;
 				GCC_WARN_UNUSED_FUNCTION = NO;
 				GCC_WARN_UNUSED_LABEL = NO;
@@ -723,8 +724,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(LD_RUNPATH_SEARCH_PATHS_$(IS_MACCATALYST)) @executable_path/../Frameworks";
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = ("-larchive");
-				PRODUCT_BUNDLE_IDENTIFIER = jp.coo.cooViewer;
-				PRODUCT_NAME = cooViewer;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mi-ak.coo2;
+				PRODUCT_NAME = coo2;
 				ZERO_LINK = YES;
 			};
 			name = Development2;
@@ -774,7 +775,8 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1.2b25;
+				CURRENT_PROJECT_VERSION = 1;
+				MARKETING_VERSION = 0.1.0;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
 					"\"$(SRCROOT)\"",
@@ -784,7 +786,7 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = src/cooViewer_Prefix.pch;
+				GCC_PREFIX_HEADER = src/coo2_Prefix.pch;
 				GCC_WARN_ABOUT_RETURN_TYPE = NO;
 				GCC_WARN_UNUSED_FUNCTION = NO;
 				GCC_WARN_UNUSED_LABEL = NO;
@@ -795,8 +797,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(LD_RUNPATH_SEARCH_PATHS_$(IS_MACCATALYST)) @executable_path/../Frameworks";
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = ("-larchive");
-				PRODUCT_BUNDLE_IDENTIFIER = jp.coo.cooViewer;
-				PRODUCT_NAME = cooViewer;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mi-ak.coo2;
+				PRODUCT_NAME = coo2;
 				ZERO_LINK = YES;
 			};
 			name = Development;
@@ -827,7 +829,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_PREFIX_HEADER = src/cooViewer_Prefix.pch;
+				GCC_PREFIX_HEADER = src/coo2_Prefix.pch;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -847,7 +849,8 @@
 				CODE_SIGN_IDENTITY = "";
 				COPY_PHASE_STRIP = YES;
 				DEAD_CODE_STRIPPING = YES;
-				CURRENT_PROJECT_VERSION = 1.2b25;
+				CURRENT_PROJECT_VERSION = 1;
+				MARKETING_VERSION = 0.1.0;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
 					/Library/Frameworks,
@@ -858,7 +861,7 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_OPTIMIZATION_LEVEL = s;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
-				GCC_PREFIX_HEADER = src/cooViewer_Prefix.pch;
+				GCC_PREFIX_HEADER = src/coo2_Prefix.pch;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_FUNCTION = NO;
 				GCC_WARN_UNUSED_LABEL = NO;
@@ -870,8 +873,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(LD_RUNPATH_SEARCH_PATHS_$(IS_MACCATALYST)) @executable_path/../Frameworks";
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = ("-larchive");
-				PRODUCT_BUNDLE_IDENTIFIER = jp.coo.cooViewer;
-				PRODUCT_NAME = cooViewer;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mi-ak.coo2;
+				PRODUCT_NAME = coo2;
 				ZERO_LINK = NO;
 			};
 			name = Deployment2;
@@ -884,7 +887,8 @@
 				CODE_SIGN_IDENTITY = "";
 				COPY_PHASE_STRIP = YES;
 				DEAD_CODE_STRIPPING = YES;
-				CURRENT_PROJECT_VERSION = 1.2b25;
+				CURRENT_PROJECT_VERSION = 1;
+				MARKETING_VERSION = 0.1.0;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
 					"\"$(SRCROOT)\"",
@@ -894,7 +898,7 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_OPTIMIZATION_LEVEL = s;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = src/cooViewer_Prefix.pch;
+				GCC_PREFIX_HEADER = src/coo2_Prefix.pch;
 				GCC_WARN_ABOUT_RETURN_TYPE = NO;
 				GCC_WARN_UNUSED_FUNCTION = NO;
 				GCC_WARN_UNUSED_LABEL = NO;
@@ -905,8 +909,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(LD_RUNPATH_SEARCH_PATHS_$(IS_MACCATALYST)) @executable_path/../Frameworks";
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = ("-larchive");
-				PRODUCT_BUNDLE_IDENTIFIER = jp.coo.cooViewer;
-				PRODUCT_NAME = cooViewer;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mi-ak.coo2;
+				PRODUCT_NAME = coo2;
 				ZERO_LINK = NO;
 			};
 			name = Deployment;
@@ -917,7 +921,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "";
-				CURRENT_PROJECT_VERSION = 1.2b25;
+				CURRENT_PROJECT_VERSION = 1;
+				MARKETING_VERSION = 0.1.0;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
 					"\"$(SRCROOT)\"",
@@ -925,13 +930,13 @@
 				FRAMEWORK_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)\"";
 				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = src/cooViewer_Prefix.pch;
+				GCC_PREFIX_HEADER = src/coo2_Prefix.pch;
 				INFOPLIST_FILE = resource/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(LD_RUNPATH_SEARCH_PATHS_$(IS_MACCATALYST)) @executable_path/../Frameworks";
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = ("-larchive");
-				PRODUCT_BUNDLE_IDENTIFIER = jp.coo.cooViewer;
-				PRODUCT_NAME = cooViewer;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mi-ak.coo2;
+				PRODUCT_NAME = coo2;
 			};
 			name = Default;
 		};
@@ -1006,7 +1011,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		762F248A0899B2FD00419EAA /* Build configuration list for PBXNativeTarget "cooViewer" */ = {
+		762F248A0899B2FD00419EAA /* Build configuration list for PBXNativeTarget "coo2" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				37B6C4E31310189B00C624DE /* Development */,
@@ -1018,7 +1023,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Default;
 		};
-		762F248E0899B2FD00419EAA /* Build configuration list for PBXProject "cooViewer" */ = {
+		762F248E0899B2FD00419EAA /* Build configuration list for PBXProject "coo2" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				37B6C4E21310189B00C624DE /* Development */,
