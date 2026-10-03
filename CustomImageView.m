@@ -7,6 +7,11 @@
 @interface CustomImageView(private)
 -(void)setUrlRect;
 -(NSURL*)urlWithPoint:(NSPoint)pt;
+-(void)updateAnimationTimer;
+-(void)stopAnimationTimer;
+-(void)advanceDisplayedAnimation:(NSTimer *)timer;
+-(NSUInteger)displayedAnimatedImages:(COAnimatedImage **)animatedImages;
+-(void)restartDisplayedAnimations;
 @end
 
 @implementation CustomImageView
@@ -32,6 +37,13 @@
 {
 	[super viewDidEndLiveResize];
     [[NSNotificationCenter defaultCenter] postNotificationName:@"ViewDidEndLiveResize" object:self];
+}
+
+- (void)viewWillMoveToWindow:(NSWindow *)newWindow
+{
+	if (!newWindow) [self stopAnimationTimer];
+	[super viewWillMoveToWindow:newWindow];
+	if (newWindow) [self updateAnimationTimer];
 }
 
 #pragma mark preferences
@@ -663,27 +675,112 @@ NSTimeInterval elapsed=0;
  */
 
 -(void)setImage:(NSImage *)image
-{		
+{
 	images = NO;
 	[_image autorelease];
 	_image = [image retain];
     if (image == nil) {
         [super setImage:_image];
+		[self updateAnimationTimer];
         return;
     }
+	if ([image isKindOfClass:[COAnimatedImage class]]) [(COAnimatedImage *)image restartAnimation];
+	[self updateAnimationTimer];
     [self imageDisplay];
 }
 
 -(void)setImages:(NSImage *)image
 {
-	images = YES;
+	images = ([target image1] != nil && [target image2] != nil);
 	[_image autorelease];
 	_image = [image retain];
     if (image == nil) {
         [super setImage:_image];
+		[self updateAnimationTimer];
         return;
     }
+	[self restartDisplayedAnimations];
+	[self updateAnimationTimer];
     [self imageDisplay];
+}
+
+- (NSUInteger)displayedAnimatedImages:(COAnimatedImage **)animatedImages
+{
+	NSImage *candidates[2];
+	NSUInteger candidateCount = 0;
+	if (images) {
+		candidates[candidateCount++] = [target image1];
+		candidates[candidateCount++] = [target image2];
+	} else {
+		candidates[candidateCount++] = _image;
+	}
+
+	NSUInteger animatedCount = 0;
+	for (NSUInteger index = 0; index < candidateCount; index++) {
+		NSImage *image = candidates[index];
+		if ([image isKindOfClass:[COAnimatedImage class]]) {
+			animatedImages[animatedCount++] = (COAnimatedImage *)image;
+		}
+	}
+	return animatedCount;
+}
+
+- (void)restartDisplayedAnimations
+{
+	COAnimatedImage *animatedImages[2];
+	NSUInteger count = [self displayedAnimatedImages:animatedImages];
+	for (NSUInteger index = 0; index < count; index++) {
+		BOOL alreadyRestarted = NO;
+		for (NSUInteger previousIndex = 0; previousIndex < index; previousIndex++) {
+			if (animatedImages[previousIndex] == animatedImages[index]) alreadyRestarted = YES;
+		}
+		if (!alreadyRestarted) [animatedImages[index] restartAnimation];
+	}
+}
+
+- (void)stopAnimationTimer
+{
+	[animationTimer invalidate];
+	[animationTimer release];
+	animationTimer = nil;
+}
+
+- (void)updateAnimationTimer
+{
+	[self stopAnimationTimer];
+	if (![self window]) return;
+
+	COAnimatedImage *animatedImages[2];
+	NSUInteger count = [self displayedAnimatedImages:animatedImages];
+	NSTimeInterval nextFrameDelay = -1.0;
+	for (NSUInteger index = 0; index < count; index++) {
+		NSTimeInterval delay = [animatedImages[index] timeUntilNextFrame];
+		if (delay >= 0.0 && (nextFrameDelay < 0.0 || delay < nextFrameDelay)) {
+			nextFrameDelay = delay;
+		}
+	}
+	if (nextFrameDelay < 0.0) return;
+
+	NSTimer *newTimer = [NSTimer timerWithTimeInterval:MAX(0.01, nextFrameDelay)
+		target:self selector:@selector(advanceDisplayedAnimation:) userInfo:nil repeats:NO];
+	animationTimer = [newTimer retain];
+	[[NSRunLoop mainRunLoop] addTimer:animationTimer forMode:NSRunLoopCommonModes];
+}
+
+- (void)advanceDisplayedAnimation:(NSTimer *)timer
+{
+	(void)timer;
+	[animationTimer release];
+	animationTimer = nil;
+
+	COAnimatedImage *animatedImages[2];
+	NSUInteger count = [self displayedAnimatedImages:animatedImages];
+	BOOL didAdvance = NO;
+	for (NSUInteger index = 0; index < count; index++) {
+		if ([animatedImages[index] advanceFrameIfNeeded]) didAdvance = YES;
+	}
+	if (didAdvance) [self setNeedsDisplay:YES];
+	[self updateAnimationTimer];
 }
 
 -(void)imageDisplay
@@ -693,7 +790,7 @@ NSTimeInterval elapsed=0;
     [[self layer] setFilters:filters];
     if (![accessoryWindow isVisible]) [accessoryWindow orderFront:self];
     if (fitScreenMode > 0) {
-        if (images) {
+        if (images && [target image1] && [target image2]) {
             NSDictionary *infodic = [self getDrawImagesInfo:[target image1] and:[target image2]];
             NSSize frameSize = NSSizeFromString([infodic objectForKey:@"frameSize"]);
             [self setFrameSize:frameSize];
@@ -747,7 +844,7 @@ NSTimeInterval elapsed=0;
                 [gc setImageInterpolation:NSImageInterpolationDefault];
                 break;
         }
-        if ([target firstImage] && images) {
+        if (images && [target image1] && [target image2]) {
             [self drawImages:[target image1] and:[target image2]];
         } else {
             //single & oldscroll

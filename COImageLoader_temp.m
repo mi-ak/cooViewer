@@ -1,6 +1,5 @@
 #import <HetimaUnZip/HetimaUnZip.h>
-#import "XADWrapper.h"
-#import "XADItem.h"
+#import "COArchiveReader.h"
 #import "Controller.h"
 #import "COImageLoader.h"
 
@@ -439,7 +438,7 @@
 		
 	} */else if([[COImageLoader archiveTypes] containsObject:[[filePath pathExtension] lowercaseString]]) {
 		mode=2;
-		archiveContainer=[[XADWrapper alloc] initWithPath:filePath nameEncoding:NSShiftJISStringEncoding];
+			archiveContainer=[[COArchiveReader alloc] initWithPath:filePath];
 		[self checkArchiveContainer:0];
 		return;
 		

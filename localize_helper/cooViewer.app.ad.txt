@@ -37,55 +37,6 @@
 <!--    cooViewer.app/../InfoPlist.strings    -->
 <!--                                          -->
 <File>
-<Filepath>cooViewer.app/Contents/Frameworks/UniversalDetector.framework/Versions/A/Resources/English.lproj/InfoPlist.strings</Filepath>
-
-<TextItem>
-<Description> Localized versions of Info.plist keys </Description>
-<Position>NSHumanReadableCopyright</Position>
-<TranslationSet>
-
-	<base loc="en"                            >© __MyCompanyName__, 2006</base>
-	<tran loc="ja" origin="OldLoc exact match">© __MyCompanyName__, 2006</tran>
-
-</TranslationSet>
-</TextItem>
-
-</File>
-
-<!--                                          -->
-<!--    cooViewer.app/../InfoPlist.strings    -->
-<!--                                          -->
-<File>
-<Filepath>cooViewer.app/Contents/Frameworks/XADMaster.framework/Versions/A/Resources/English.lproj/InfoPlist.strings</Filepath>
-
-<TextItem>
-<Description> Localized versions of Info.plist keys </Description>
-<Position>NSHumanReadableCopyright</Position>
-<TranslationSet>
-
-	<base loc="en"                            >LGPL</base>
-	<tran loc="ja" origin="OldLoc exact match">LGPL</tran>
-
-</TranslationSet>
-</TextItem>
-
-<TextItem>
-<Description> Localized versions of Info.plist keys </Description>
-<Position>NSHumanReadableCopyright</Position>
-<TranslationSet>
-
-	<base loc="en"                            >© __MyCompanyName__, 2006</base>
-	<tran loc="ja" origin="OldLoc exact match">© __MyCompanyName__, 2006</tran>
-
-</TranslationSet>
-</TextItem>
-
-</File>
-
-<!--                                          -->
-<!--    cooViewer.app/../InfoPlist.strings    -->
-<!--                                          -->
-<File>
 <Filepath>cooViewer.app/Contents/Resources/English.lproj/InfoPlist.strings</Filepath>
 
 <TextItem>

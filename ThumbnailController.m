@@ -20,7 +20,8 @@
 	sortMode = 0;
 	now = 0;
 	maxCacheCount = 0;
-	thumImageArray = [[NSMutableArray allocWithZone:NULL] init];
+	thumbnailCache = [[NSCache alloc] init];
+	[thumbnailCache setName:@"cooViewer.thumbnailCache"];
 	
 	[panel setBackgroundColor:[NSColor clearColor]];
 	[panel setOpaque:NO];
@@ -46,13 +47,22 @@
 
 }
 
+-(void)dealloc
+{
+	[wheelUpTimer invalidate];
+	[wheelDownTimer invalidate];
+	[keyArray release];
+	[thumbnailCache release];
+	[super dealloc];
+}
+
 -(void)setImageLoader:(COImageLoader*)loader
 {
 	[sortPopUpButton setEnabled:YES];
 	sortMode = 0;
 	//mangaMode = NO;
 	[sortPopUpButton selectItemAtIndex:0];
-	if (loader != imageLoader) [thumImageArray removeAllObjects];
+	if (loader != imageLoader) [thumbnailCache removeAllObjects];
 	pathArray = [loader pathArray];
 	imageLoader = loader;
 	now = 0;
@@ -62,7 +72,8 @@
 {
 	if (maxCacheCount != size && size>=0) {
 		maxCacheCount = size;
-		while ([thumImageArray count] > maxCacheCount) [thumImageArray removeObjectAtIndex:0];
+		[thumbnailCache setCountLimit:(NSUInteger)size];
+		if (size == 0) [thumbnailCache removeAllObjects];
 	}
 }
 #pragma mark -
@@ -72,25 +83,32 @@
 
 -(id)loadImage:(int)index
 {
-	NSEnumerator *enu;
-	enu = [thumImageArray objectEnumerator];
-	NSDictionary *object;
-	while (object = [enu nextObject]) {
-		if ([[object objectForKey:@"page"] intValue] == index) {
-			[object retain];
-			[thumImageArray removeObject:object];
-			[thumImageArray addObject:object];
-			[object release];
-			return [object objectForKey:@"image"];
-		}
-	}
+	NSNumber *cacheKey = [NSNumber numberWithInt:index];
+	NSImage *cachedImage = [thumbnailCache objectForKey:cacheKey];
+	if (cachedImage) return cachedImage;
 	
 	
 	NSImage *image;
-	image = [[controller loadImage:index] retain];
+	if (mangaMode) {
+		image = [[controller loadImage:index] retain];
+	} else {
+		CGFloat scale = 1.0;
+		NSWindow *window = [panel window];
+		if ([window respondsToSelector:@selector(backingScaleFactor)]) {
+			scale = [window backingScaleFactor];
+		}
+		NSSize cellSize = [matrix cellSize];
+		NSUInteger maxPixelSize = (NSUInteger)MAX(1.0, MAX(cellSize.width, cellSize.height) * scale + 0.5);
+		image = [[imageLoader itemAtIndex:index maxPixelSize:maxPixelSize] retain];
+	}
+	if (!image) return nil;
 	
 	int widthValue = [image size].width;
 	int heightValue = [image size].height;
+	if (widthValue <= 0 || heightValue <= 0 || [matrix cellSize].width <= 0 || [matrix cellSize].height <= 0) {
+		[image release];
+		return nil;
+	}
 	float wRate = widthValue/[matrix cellSize].width;
 	float hRate = heightValue/[matrix cellSize].height;
 	float newWidth;
@@ -111,6 +129,8 @@
 			break;
 		}
 	}*/
+	newWidth = MAX(1.0f, newWidth);
+	newHeight = MAX(1.0f, newHeight);
 	NSImage *newImage = [[[NSImage alloc] initWithSize:NSMakeSize(newWidth,newHeight)] autorelease];
 	[newImage lockFocus];
 	[[NSGraphicsContext currentContext] setImageInterpolation:NSImageInterpolationLow];
@@ -150,8 +170,7 @@
 	
 	[newImage unlockFocus];
 	[image release];
-	[thumImageArray addObject:[NSDictionary dictionaryWithObjectsAndKeys:newImage,@"image",[NSString stringWithFormat:@"%i",index],@"page",nil]];
-	while ([thumImageArray count] > maxCacheCount) [thumImageArray removeObjectAtIndex:0];
+	if (maxCacheCount > 0) [thumbnailCache setObject:newImage forKey:cacheKey];
 	return newImage;
 }
 
@@ -337,6 +356,7 @@
 				now--;
 				return newImage;
 			} else {
+				[image2 release];
 				return [image autorelease];
 			}
 		}
@@ -1470,7 +1490,7 @@
 	int oldSortMode = sortMode;
 	sortMode = (int)[sortPopUpButton indexOfItem:sender];
 	if (oldSortMode!=sortMode) {
-		[thumImageArray removeAllObjects];
+		[thumbnailCache removeAllObjects];
 	} else {
 		sortMode = oldSortMode;
 		return;

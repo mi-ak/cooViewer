@@ -1,17 +1,263 @@
-#import "XADWrapper.h"
-#import "XADItem.h"
+#import "COArchiveReader.h"
 #import "Controller.h"
 #import "COImageLoader.h"
+#import <ImageIO/ImageIO.h>
 
-@interface COImageLoader(private)
+@interface COImageLoader (private)
 -(void)content;
 -(BOOL)checkArchiveContainer:(int)index;
+-(BOOL)createDir:(NSString*)dir;
 -(BOOL)uncompressToTempDir:(NSString*)file;
+@end
+
+@interface COImageLoader ()
+-(NSImage *)imageWithData:(NSData *)data maxPixelSize:(NSUInteger)maxPixelSize;
+-(NSImage *)imageWithData:(NSData *)data maxPixelSize:(NSUInteger)maxPixelSize fileName:(NSString *)fileName;
+-(NSImage *)imageWithContentsOfFile:(NSString *)path maxPixelSize:(NSUInteger)maxPixelSize;
 //-(BOOL)uncompressAllFileToTempDir;
 @end
 static NSArray *_COImageLoader_fileTypes=nil;
 static NSArray *_COImageLoader_archiveTypes=nil;
+static NSArray *_COImageLoader_imageFileTypes=nil;
+
+@interface COAnimatedImage ()
+- (id)initWithImageSource:(CGImageSourceRef)source data:(NSData *)data isWebP:(BOOL)isWebP;
+- (void)drawFrame:(CGImageRef)frame clearCanvas:(BOOL)clearCanvas;
+- (NSImage *)imageFromCompositingContext;
+- (NSImage *)compositedImageForFrame:(CGImageRef)frame clearCanvas:(BOOL)clearCanvas;
+@end
+
+@implementation COAnimatedImage
+
++ (NSImage *)animatedImageWithData:(NSData *)data fileExtension:(NSString *)extension
+{
+	if (!data || [data length] == 0) return nil;
+	NSString *lowercaseExtension = [extension lowercaseString];
+	BOOL isWebP = [lowercaseExtension isEqualToString:@"webp"];
+	if (!isWebP && ![lowercaseExtension isEqualToString:@"gif"]) return nil;
+
+	NSData *imageData = [NSData dataWithData:data];
+	CGImageSourceRef source = CGImageSourceCreateWithData((CFDataRef)imageData, NULL);
+	if (!source) return nil;
+	if (CGImageSourceGetCount(source) < 2) {
+		CFRelease(source);
+		return nil;
+	}
+	COAnimatedImage *image = [[[COAnimatedImage alloc] initWithImageSource:source data:imageData isWebP:isWebP] autorelease];
+	CFRelease(source);
+	return image;
+}
+
+- (id)initWithImageSource:(CGImageSourceRef)source data:(NSData *)data isWebP:(BOOL)isWebP
+{
+	CGImageRef firstFrame = CGImageSourceCreateImageAtIndex(source, 0, NULL);
+	if (!firstFrame) {
+		[self release];
+		return nil;
+	}
+	NSSize imageSize = NSMakeSize(CGImageGetWidth(firstFrame), CGImageGetHeight(firstFrame));
+	self = [super initWithSize:imageSize];
+	if (self) {
+		_imageSource = (CGImageSourceRef)CFRetain(source);
+		_sourceData = [data copy];
+		CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+		_compositingContext = CGBitmapContextCreate(NULL,
+			(size_t)imageSize.width, (size_t)imageSize.height, 8, 0, colorSpace,
+			kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+		CGColorSpaceRelease(colorSpace);
+		_currentFrameImage = [[self compositedImageForFrame:firstFrame clearCanvas:YES] retain];
+
+		NSMutableArray *durations = [NSMutableArray array];
+		NSUInteger frameCount = CGImageSourceGetCount(_imageSource);
+		for (NSUInteger index = 0; index < frameCount; index++) {
+			NSDictionary *properties = [(NSDictionary *)CGImageSourceCopyPropertiesAtIndex(_imageSource, index, NULL) autorelease];
+			NSDictionary *formatProperties = nil;
+			NSNumber *delay = nil;
+			if (isWebP) {
+				if (@available(macOS 11.0, *)) {
+					formatProperties = [properties objectForKey:(id)kCGImagePropertyWebPDictionary];
+					id unclampedDelay = [formatProperties objectForKey:(id)kCGImagePropertyWebPUnclampedDelayTime];
+					delay = unclampedDelay ? unclampedDelay : [formatProperties objectForKey:(id)kCGImagePropertyWebPDelayTime];
+				}
+			} else {
+				formatProperties = [properties objectForKey:(id)kCGImagePropertyGIFDictionary];
+				id unclampedDelay = [formatProperties objectForKey:(id)kCGImagePropertyGIFUnclampedDelayTime];
+				delay = unclampedDelay ? unclampedDelay : [formatProperties objectForKey:(id)kCGImagePropertyGIFDelayTime];
+			}
+			NSTimeInterval duration = [delay respondsToSelector:@selector(doubleValue)] ? [delay doubleValue] : 0.1;
+			[durations addObject:[NSNumber numberWithDouble:MAX(0.02, duration)]];
+		}
+		_frameDurations = [[NSArray alloc] initWithArray:durations];
+
+		NSDictionary *containerProperties = [(NSDictionary *)CGImageSourceCopyProperties(_imageSource, NULL) autorelease];
+		NSDictionary *formatContainerProperties = nil;
+		NSNumber *loopCount = nil;
+		if (isWebP) {
+			if (@available(macOS 11.0, *)) {
+				formatContainerProperties = [containerProperties objectForKey:(id)kCGImagePropertyWebPDictionary];
+				loopCount = [formatContainerProperties objectForKey:(id)kCGImagePropertyWebPLoopCount];
+			}
+		} else {
+			formatContainerProperties = [containerProperties objectForKey:(id)kCGImagePropertyGIFDictionary];
+			loopCount = [formatContainerProperties objectForKey:(id)kCGImagePropertyGIFLoopCount];
+		}
+		_loopCount = [loopCount respondsToSelector:@selector(unsignedIntegerValue)] ? [loopCount unsignedIntegerValue] : 0;
+		_nextFrameTime = [NSDate timeIntervalSinceReferenceDate] + [[_frameDurations objectAtIndex:0] doubleValue];
+		CGImageRelease(firstFrame);
+		if (!_currentFrameImage) {
+			[self release];
+			return nil;
+		}
+	} else {
+		CGImageRelease(firstFrame);
+	}
+	return self;
+}
+
+- (NSImage *)compositedImageForFrame:(CGImageRef)frame clearCanvas:(BOOL)clearCanvas
+{
+	if (!frame || !_compositingContext) return nil;
+	[self drawFrame:frame clearCanvas:clearCanvas];
+	return [self imageFromCompositingContext];
+}
+
+- (void)drawFrame:(CGImageRef)frame clearCanvas:(BOOL)clearCanvas
+{
+	if (!frame || !_compositingContext) return;
+	CGRect canvasRect = CGRectMake(0, 0, [self size].width, [self size].height);
+	if (clearCanvas) {
+		CGContextClearRect(_compositingContext, canvasRect);
+	}
+	CGContextSetBlendMode(_compositingContext, kCGBlendModeNormal);
+	CGRect frameRect = CGRectMake(0, 0, CGImageGetWidth(frame), CGImageGetHeight(frame));
+	CGContextDrawImage(_compositingContext, frameRect, frame);
+	}
+
+- (NSImage *)imageFromCompositingContext
+{
+	if (!_compositingContext) return nil;
+	NSInteger width = (NSInteger)[self size].width;
+	NSInteger height = (NSInteger)[self size].height;
+	NSBitmapImageRep *rep = [[[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL
+		pixelsWide:width pixelsHigh:height bitsPerSample:8 samplesPerPixel:4 hasAlpha:YES
+		isPlanar:NO colorSpaceName:NSDeviceRGBColorSpace bitmapFormat:0 bytesPerRow:0 bitsPerPixel:0] autorelease];
+	if (!rep) return nil;
+	const uint8_t *source = (const uint8_t *)CGBitmapContextGetData(_compositingContext);
+	uint8_t *destination = [rep bitmapData];
+	size_t sourceBytesPerRow = CGBitmapContextGetBytesPerRow(_compositingContext);
+	size_t destinationBytesPerRow = (size_t)[rep bytesPerRow];
+	size_t rowBytes = (size_t)width * 4;
+	for (NSInteger row = 0; row < height; row++) {
+		memcpy(destination + (size_t)row * destinationBytesPerRow,
+			source + (size_t)row * sourceBytesPerRow, rowBytes);
+	}
+	NSImage *frameImage = [[[NSImage alloc] initWithSize:[self size]] autorelease];
+	[frameImage addRepresentation:rep];
+	return frameImage;
+}
+
+- (NSTimeInterval)timeUntilNextFrame
+{
+	if (_animationFinished) return -1.0;
+	return MAX(0.0, _nextFrameTime - [NSDate timeIntervalSinceReferenceDate]);
+}
+
+- (void)restartAnimation
+{
+	if (_currentFrame != 0) {
+		CGImageRef cgFirstFrame = CGImageSourceCreateImageAtIndex(_imageSource, 0, NULL);
+		NSImage *firstFrame = [self compositedImageForFrame:cgFirstFrame clearCanvas:YES];
+		if (cgFirstFrame) CGImageRelease(cgFirstFrame);
+		if (firstFrame) {
+			[_currentFrameImage release];
+			_currentFrameImage = [firstFrame retain];
+		}
+	}
+	_currentFrame = 0;
+	_completedLoops = 0;
+	_animationFinished = NO;
+	_nextFrameTime = [NSDate timeIntervalSinceReferenceDate] + [[_frameDurations objectAtIndex:0] doubleValue];
+}
+
+- (BOOL)advanceFrameIfNeeded
+{
+	if (_animationFinished || [self timeUntilNextFrame] > 0.0) return NO;
+	NSUInteger frameCount = CGImageSourceGetCount(_imageSource);
+	NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+	BOOL didAdvance = NO;
+	while (!_animationFinished && now >= _nextFrameTime) {
+		NSUInteger nextFrame = _currentFrame + 1;
+		if (nextFrame >= frameCount) {
+			_completedLoops++;
+			if (_loopCount > 0 && _completedLoops >= _loopCount) {
+				_animationFinished = YES;
+				break;
+			}
+			nextFrame = 0;
+	CGContextClearRect(_compositingContext, CGRectMake(0, 0, [self size].width, [self size].height));
+		}
+		_currentFrame = nextFrame;
+		_nextFrameTime += [[_frameDurations objectAtIndex:_currentFrame] doubleValue];
+		CGImageRef cgFrame = CGImageSourceCreateImageAtIndex(_imageSource, _currentFrame, NULL);
+		if (cgFrame) {
+			[self drawFrame:cgFrame clearCanvas:NO];
+			CGImageRelease(cgFrame);
+		}
+		didAdvance = YES;
+	}
+	if (didAdvance) {
+		NSImage *frameImage = [self imageFromCompositingContext];
+		if (frameImage) {
+			[_currentFrameImage release];
+			_currentFrameImage = [frameImage retain];
+		}
+	}
+	return didAdvance;
+}
+
+- (void)drawInRect:(NSRect)dstRect fromRect:(NSRect)srcRect operation:(NSCompositingOperation)op fraction:(CGFloat)delta
+{
+	[_currentFrameImage drawInRect:dstRect fromRect:srcRect operation:op fraction:delta];
+}
+
+- (NSArray *)representations
+{
+	if (_currentFrameImage) return [_currentFrameImage representations];
+	return [super representations];
+}
+
+- (BOOL)isValid
+{
+	return _currentFrameImage && [_currentFrameImage isValid];
+}
+
+- (void)dealloc
+{
+	if (_imageSource) CFRelease(_imageSource);
+	if (_compositingContext) CGContextRelease(_compositingContext);
+	[_sourceData release];
+	[_frameDurations release];
+	[_currentFrameImage release];
+	[super dealloc];
+}
+
+@end
+
 @implementation COImageLoader
++(NSArray *)imageFileTypes
+{
+	if (!_COImageLoader_imageFileTypes) {
+		NSMutableArray *types = [NSMutableArray arrayWithArray:[NSImage imageFileTypes]];
+		// AVIF is supported by ImageIO on current macOS versions, but older
+		// AppKit SDK/runtime combinations do not always advertise the extension.
+		[types addObjectsFromArray:[NSArray arrayWithObjects:@"avif", @"AVIF", nil]];
+		if (![types containsObject:@"webp"]) [types addObject:@"webp"];
+		if (![types containsObject:@"WEBP"]) [types addObject:@"WEBP"];
+		_COImageLoader_imageFileTypes = [[NSArray arrayWithArray:types] retain];
+	}
+	return _COImageLoader_imageFileTypes;
+}
+
 +(NSArray *)fileTypes
 {
 	//COImageLoaderで読み込める種類(スマートフォルダとフォルダ以外)
@@ -25,14 +271,14 @@ static NSArray *_COImageLoader_archiveTypes=nil;
 				[array addObjectsFromArray:inner];
 			}
 		}
-		[array removeObjectsInArray:[NSImage imageFileTypes]];
+		[array removeObjectsInArray:[COImageLoader imageFileTypes]];
 		[array removeObjectsInArray:[NSArray arrayWithObjects:@"savedSearch",nil]];
 		[array addObject:@"pdf"];
 		_COImageLoader_fileTypes = [[NSArray arrayWithArray:array] retain];
 		//NSLog(@"%@",_COImageLoader_fileTypes);
 	}
 	return _COImageLoader_fileTypes;
-	//return [NSArray arrayWithObjects:@"zip",@"cbz",@"rar",@"cbr",@"lzh",@"lha",@"7z",@"sit",@"pdf",@"cvbdl",nil];
+	//return [NSArray arrayWithObjects:@"zip",@"cbz",@"rar",@"cbr",@"lzh",@"lha",@"7z",@"pdf",@"cvbdl",nil];
 }
 +(NSArray *)archiveTypes
 {
@@ -40,11 +286,12 @@ static NSArray *_COImageLoader_archiveTypes=nil;
 	if (!_COImageLoader_archiveTypes) {
 		NSMutableArray *temp = [NSMutableArray arrayWithArray:[COImageLoader fileTypes]];
 		[temp removeObjectsInArray:[NSArray arrayWithObjects:@"cvbdl",@"pdf",nil]];
+		[temp removeObjectsInArray:[COImageLoader imageFileTypes]];
 		_COImageLoader_archiveTypes = [[NSArray arrayWithArray:temp] retain];
 		//NSLog(@"%@",_COImageLoader_archiveTypes);
 	}
 	return _COImageLoader_archiveTypes;
-	//return [NSArray arrayWithObjects:@"zip",@"cbz",@"rar",@"cbr",@"lzh",@"lha",@"7z",@"sit",nil];
+	//return [NSArray arrayWithObjects:@"zip",@"cbz",@"rar",@"cbr",@"lzh",@"lha",@"7z",nil];
 }
 
 - (NSString*)displayPath
@@ -64,7 +311,7 @@ static NSArray *_COImageLoader_archiveTypes=nil;
 		inArchiveArray = [[NSMutableArray alloc] init];
 		
 		NSMutableArray *tempArray = [NSMutableArray arrayWithArray:[COImageLoader fileTypes]];
-		[tempArray addObjectsFromArray:[NSImage imageFileTypes]];
+		[tempArray addObjectsFromArray:[COImageLoader imageFileTypes]];
 		
 		filterArray = [[NSArray arrayWithArray:tempArray] retain];
 		readSubFolder=boo;
@@ -179,13 +426,21 @@ static NSArray *_COImageLoader_archiveTypes=nil;
 
 - (id)itemAtIndex:(int)index
 {
+	return [self itemAtIndex:index maxPixelSize:0];
+}
+
+- (NSImage *)itemAtIndex:(int)index maxPixelSize:(NSUInteger)maxPixelSize
+{
+	if (index < 0 || index >= [contentPathArray count]) return nil;
+
 	if ([inArchiveArray count] > 0) {
 		NSString *fileName = [contentPathArray objectAtIndex:index];
 		int i;
 		for (i=0; i<[inArchiveArray count]; i++) {
 			COImageLoader *inLoader = [inArchiveArray objectAtIndex:i];
-			if ([[inLoader pathArray] indexOfObject:fileName] != NSNotFound) {
-				return [inLoader itemAtIndex:(int)[[inLoader pathArray] indexOfObject:fileName]];
+			NSUInteger nestedIndex = [[inLoader pathArray] indexOfObject:fileName];
+			if (nestedIndex != NSNotFound) {
+				return [inLoader itemAtIndex:(int)nestedIndex maxPixelSize:maxPixelSize];
 			}
 		}
 	}
@@ -193,28 +448,117 @@ static NSArray *_COImageLoader_archiveTypes=nil;
 		return [[[COPDFImage alloc] initWithPDFRep:pdfRep page:index] autorelease];
 	} else if(mode==2) {
 		NSString *rawName = [contentPathDic objectForKey:[contentPathArray objectAtIndex:index]];
-		NSArray*    items=[archiveContainer contents];
-		
-		NSData *data = nil;
 		NSImage *image = nil;
-		if ([rawContentPathArray indexOfObject:rawName] != NSNotFound) {
-			data =[[items objectAtIndex:[rawContentPathArray indexOfObject:rawName]] data];
+		COArchiveEntry *entry = [archiveContainer itemForPath:rawName];
+		if (entry) {
+			// Keep archive images in memory while ImageIO creates the image. An
+			// NSImage loaded from a temporary URL may defer decoding until after
+			// that URL has been removed; this is particularly visible with AVIF.
+			NSData *data = [entry data];
+			image = [self imageWithData:data maxPixelSize:maxPixelSize fileName:rawName];
 		}
-		
-		if(data && [data length]>0){
-			image = [[[NSImage allocWithZone:NULL] initWithData:data] autorelease];	
-			if(image && [image isValid] && [image representations]) {
-				return image;
-			}
+		if (image && [image isValid] && [[image representations] count] > 0) {
+			return image;
 		}
 	} else {
-		NSImage *image = [[[NSImage allocWithZone:NULL] initWithContentsOfFile:[contentPathArray objectAtIndex:index]] autorelease];
-		if(image && [image isValid] && [image representations]){
+		NSImage *image = [self imageWithContentsOfFile:[contentPathArray objectAtIndex:index]
+			maxPixelSize:maxPixelSize];
+		if (image && [image isValid] && [[image representations] count] > 0) {
 			return image;
 		}
 	}
-	return [[[NSImage allocWithZone:NULL] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"broken" ofType:@"png"]] autorelease];
-	return nil;
+	static NSImage *brokenImage = nil;
+	if (!brokenImage) {
+		brokenImage = [[NSImage allocWithZone:NULL] initWithContentsOfFile:
+			[[NSBundle mainBundle] pathForResource:@"broken" ofType:@"png"]];
+	}
+	return brokenImage;
+}
+
+- (NSImage *)imageWithData:(NSData *)data maxPixelSize:(NSUInteger)maxPixelSize
+{
+	return [self imageWithData:data maxPixelSize:maxPixelSize fileName:nil];
+}
+
+- (NSImage *)imageWithData:(NSData *)data maxPixelSize:(NSUInteger)maxPixelSize fileName:(NSString *)fileName
+{
+	if (!data || [data length] == 0) return nil;
+
+	if (maxPixelSize > 0) {
+		// libarchive returns mutable data. ImageIO's thumbnail path can retain
+		// that buffer beyond the call, so hand it an immutable copy.
+		NSData *imageData = [NSData dataWithData:data];
+		CGImageSourceRef source = CGImageSourceCreateWithData((CFDataRef)imageData, NULL);
+		if (source) {
+			NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
+				[NSNumber numberWithBool:YES], (id)kCGImageSourceCreateThumbnailFromImageAlways,
+				[NSNumber numberWithBool:YES], (id)kCGImageSourceCreateThumbnailWithTransform,
+				[NSNumber numberWithUnsignedInteger:maxPixelSize], (id)kCGImageSourceThumbnailMaxPixelSize,
+				nil];
+			CGImageRef cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, (CFDictionaryRef)options);
+			if (cgImage) {
+				NSBitmapImageRep *rep = [[[NSBitmapImageRep alloc] initWithCGImage:cgImage] autorelease];
+				NSImage *image = [[[NSImage alloc] initWithSize:NSMakeSize(
+					CGImageGetWidth(cgImage), CGImageGetHeight(cgImage))] autorelease];
+				[image addRepresentation:rep];
+				CGImageRelease(cgImage);
+				CFRelease(source);
+				return image;
+			}
+			CFRelease(source);
+		}
+	}
+	if (maxPixelSize == 0 && fileName) {
+		NSImage *animatedImage = [COAnimatedImage animatedImageWithData:data fileExtension:[fileName pathExtension]];
+		if (animatedImage) return animatedImage;
+	}
+
+	return [[[NSImage allocWithZone:NULL] initWithData:data] autorelease];
+}
+
+- (NSImage *)imageWithContentsOfFile:(NSString *)path maxPixelSize:(NSUInteger)maxPixelSize
+{
+	if (!path || [path length] == 0) return nil;
+
+	if (maxPixelSize > 0) {
+		NSURL *url = [NSURL fileURLWithPath:path];
+		CGImageSourceRef source = CGImageSourceCreateWithURL((CFURLRef)url, NULL);
+		if (source) {
+			NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
+				[NSNumber numberWithBool:YES], (id)kCGImageSourceCreateThumbnailFromImageAlways,
+				[NSNumber numberWithBool:YES], (id)kCGImageSourceCreateThumbnailWithTransform,
+				[NSNumber numberWithUnsignedInteger:maxPixelSize], (id)kCGImageSourceThumbnailMaxPixelSize,
+				nil];
+			CGImageRef cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, (CFDictionaryRef)options);
+			if (cgImage) {
+				NSBitmapImageRep *rep = [[[NSBitmapImageRep alloc] initWithCGImage:cgImage] autorelease];
+				NSImage *image = [[[NSImage alloc] initWithSize:NSMakeSize(
+					CGImageGetWidth(cgImage), CGImageGetHeight(cgImage))] autorelease];
+				[image addRepresentation:rep];
+				CGImageRelease(cgImage);
+				CFRelease(source);
+				return image;
+			}
+			CFRelease(source);
+		}
+	}
+	if (maxPixelSize == 0) {
+		NSString *extension = [path pathExtension];
+		if ([[extension lowercaseString] isEqualToString:@"gif"] || [[extension lowercaseString] isEqualToString:@"webp"]) {
+			NSData *imageData = [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:nil];
+			NSImage *animatedImage = [COAnimatedImage animatedImageWithData:imageData fileExtension:extension];
+			if (animatedImage) return animatedImage;
+		}
+	}
+
+	NSImage *image = [[[NSImage allocWithZone:NULL] initWithContentsOfFile:path] autorelease];
+	if (image && [image isValid] && [[image representations] count] > 0) return image;
+
+	// Some ImageIO formats, notably AVIF on older AppKit combinations, are
+	// recognized reliably from their bytes but not from a file URL. Keep the
+	// normal URL path first for low memory use, then use the format detector.
+	NSData *data = [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:nil];
+	return [self imageWithData:data maxPixelSize:maxPixelSize];
 }
 
 #pragma mark -
@@ -336,7 +680,7 @@ static NSArray *_COImageLoader_archiveTypes=nil;
 	//tempData = nil;
 	if (!tempData || [tempData length]<=0 || [[[archiveContainer contents] objectAtIndex:0] path]==nil) {
 		if (mode == 2) {
-			if (![[archiveContainer archive] describeLastError]) {
+			if (![[archiveContainer errorDescription] length]) {
 				rightPassward = YES;
 				return YES;
 			}
@@ -385,7 +729,7 @@ static NSArray *_COImageLoader_archiveTypes=nil;
 		
 	} else if([[COImageLoader archiveTypes] containsObject:[[filePath pathExtension] lowercaseString]]) {
 		mode=2;
-        archiveContainer=[[XADWrapper alloc] initWithPath:filePath];
+        archiveContainer=[[COArchiveReader alloc] initWithPath:filePath];
 		[self checkArchiveContainer:0];
 		return;
 		
@@ -491,7 +835,7 @@ static NSArray *_COImageLoader_archiveTypes=nil;
 		//tempData = nil;
 		if (!tempData || [tempData length]<=0 || [[[archiveContainer contents] objectAtIndex:0] path]==nil) {
 			if (mode == 2) {
-				if (![[archiveContainer archive] describeLastError]) {
+				if (![[archiveContainer errorDescription] length]) {
 					rightPassward = YES;
 				}
 			}
@@ -545,36 +889,48 @@ static NSArray *_COImageLoader_archiveTypes=nil;
 	return YES;
 }
 
-- (void)createDir:(NSString*)dir
+- (BOOL)createDir:(NSString*)dir
 {
+	if (!dir || [dir length] == 0) return NO;
+
 	NSFileManager *manager = [NSFileManager defaultManager];
-	if (![manager fileExistsAtPath:dir]) {
-		if (![manager fileExistsAtPath:[dir stringByDeletingLastPathComponent]]) {
-			[self createDir:[dir stringByDeletingLastPathComponent]];
-		}
-        [manager createDirectoryAtPath:dir withIntermediateDirectories:NO attributes:nil error:nil];
-	}
+	BOOL isDirectory = NO;
+	if ([manager fileExistsAtPath:dir isDirectory:&isDirectory]) return isDirectory;
+
+	return [manager createDirectoryAtPath:dir
+			withIntermediateDirectories:YES
+			attributes:nil
+			error:nil];
 }
 
 - (BOOL)uncompressToTempDir:(NSString*)fileName
 {
 	if (!tempDir) {
-        const char *buffer = [[NSString stringWithFormat:@"%@/%@",NSTemporaryDirectory(),@"cooViewer.XXXXXX"] fileSystemRepresentation];
-        mkdtemp((char *)buffer);
-        tempDir = [[NSString stringWithFormat:@"%s", buffer] retain];
-	}
-	
-	NSArray* items=[archiveContainer contents];
-	NSData* data;
-	if ([rawContentPathArray indexOfObject:fileName] != NSNotFound) {
-		[self createDir:[[tempDir stringByAppendingPathComponent:fileName] stringByDeletingLastPathComponent]];
-		
-		if (mode == 2) {
-			return [archiveContainer uncompress:(int)[rawContentPathArray indexOfObject:fileName] as:[tempDir stringByAppendingPathComponent:fileName]];
+		NSFileManager *manager = [NSFileManager defaultManager];
+		NSString *basePath = [NSTemporaryDirectory() stringByStandardizingPath];
+		for (NSUInteger attempt = 0; attempt < 8 && !tempDir; attempt++) {
+			NSString *candidate = [basePath stringByAppendingPathComponent:
+				[NSString stringWithFormat:@"cooViewer-%@", [[NSProcessInfo processInfo] globallyUniqueString]]];
+			if ([manager createDirectoryAtPath:candidate
+					withIntermediateDirectories:NO
+					attributes:nil
+					error:nil]) {
+				tempDir = [candidate retain];
+			}
 		}
-	} else {
-		//NSLog(@"notFound");
 	}
-	return YES;
+	if (!tempDir || mode != 2) return NO;
+
+	NSUInteger rawIndex = [rawContentPathArray indexOfObject:fileName];
+	if (rawIndex == NSNotFound) return NO;
+	NSArray *components = [fileName pathComponents];
+	if ([fileName hasPrefix:@"/"] || [fileName hasPrefix:@"~"] ||
+		[components containsObject:@".."] || [components containsObject:@""]) {
+		return NO;
+	}
+
+	NSString *destination = [tempDir stringByAppendingPathComponent:fileName];
+	if (![self createDir:[destination stringByDeletingLastPathComponent]]) return NO;
+	return [archiveContainer uncompress:(int)rawIndex as:destination];
 }
 @end

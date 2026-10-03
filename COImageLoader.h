@@ -1,4 +1,5 @@
 #import <Cocoa/Cocoa.h>
+#import <ImageIO/ImageIO.h>
 #import "COPDFImage.h"
 #import "COPDFImageRep.h"
 
@@ -33,6 +34,7 @@
 }
 +(NSArray *)fileTypes;
 +(NSArray *)archiveTypes;
++(NSArray *)imageFileTypes;
 
 - (id)initWithPath:(NSString *)path readSubFolder:(BOOL)boo controller:(id)ctr;
 - (id)initWithPath:(NSString *)path displayPath:(NSString *)dispPath readSubFolder:(BOOL)boo controller:(id)ctr;
@@ -49,6 +51,7 @@
 
 //NSImageを返す
 - (id)itemAtIndex:(int)index;
+- (NSImage *)itemAtIndex:(int)index maxPixelSize:(NSUInteger)maxPixelSize;
 
 //file名のsort済みarray
 - (NSMutableArray*)pathArray;
@@ -74,4 +77,24 @@
 - (NSStringEncoding)nameEncoding;
 - (void)setNameEncoding:(NSStringEncoding)enc;
 */
+@end
+
+// An NSImage that decodes animation frames on demand using ImageIO timing.
+@interface COAnimatedImage : NSImage {
+@private
+	CGImageSourceRef _imageSource;
+	NSData *_sourceData;
+	NSArray *_frameDurations;
+	NSImage *_currentFrameImage;
+	CGContextRef _compositingContext;
+	NSUInteger _currentFrame;
+	NSUInteger _loopCount;
+	NSUInteger _completedLoops;
+	NSTimeInterval _nextFrameTime;
+	BOOL _animationFinished;
+}
++ (NSImage *)animatedImageWithData:(NSData *)data fileExtension:(NSString *)extension;
+- (void)restartAnimation;
+- (NSTimeInterval)timeUntilNextFrame;
+- (BOOL)advanceFrameIfNeeded;
 @end

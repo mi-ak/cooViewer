@@ -39,6 +39,7 @@
 	SEL selector;
 	double time;
 	NSTimer *timer;
+	NSTimer *animationTimer;
 	float setting;
 	
 

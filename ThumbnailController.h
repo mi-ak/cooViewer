@@ -35,7 +35,7 @@
 	
 	NSArray *keyArray;
 	
-	NSMutableArray *thumImageArray;
+	NSCache *thumbnailCache;
 	int maxCacheCount;
 	
 	float wheelSensitivity;

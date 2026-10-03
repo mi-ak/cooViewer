@@ -30,9 +30,9 @@
 	int sortMode;
 	BOOL threadStop;
 	int cacheSize;
-	NSMutableArray *cacheArray;
+	NSCache *cacheArray;
 	int screenCache;
-	NSMutableArray *screenCacheArray;
+	NSCache *screenCacheArray;
 	
 	//NSWindow *accWindow;
 	IBOutlet id progressIndicator;
