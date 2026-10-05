@@ -1,6 +1,6 @@
 # coo2 0.1.0
 
-macOS 向けの画像・コミックアーカイブビューアです。暗証番号付き PDF の閲覧にも対応します。**coo2 は coo 氏による [cooViewer](https://github.com/coo-ona/cooViewer) の派生版で、元の作者による公式版ではありません。** 操作方法は [原作のマニュアル](docs/manual.html) を参照してください。
+macOS 向けの画像・コミックアーカイブビューアです。WebP の静止画像の表示、アニメーション GIF／WebP の再生、暗証番号付き PDF の閲覧にも対応します。**coo2 は coo 氏による [cooViewer](https://github.com/coo-ona/cooViewer) の派生版で、元の作者による公式版ではありません。** 機能の紹介は [coo2 の紹介](docs/index.md)、操作方法は [操作マニュアル](docs/manual.md) を参照してください。
 
 ## ビルド
 
