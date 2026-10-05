@@ -1,4 +1,4 @@
-# coo2 0.1.0
+# coo2 0.1.1
 
 [日本語](README.md) · [English](README.en.md)
 
