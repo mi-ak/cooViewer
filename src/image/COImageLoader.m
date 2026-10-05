@@ -14,6 +14,7 @@
 @end
 
 @interface COImageLoader ()
+-(id)initWithPath:(NSString *)path displayPath:(NSString *)dispPath readSubFolder:(BOOL)boo controller:(id)ctr imagesOnly:(BOOL)imagesOnly;
 -(NSImage *)imageWithData:(NSData *)data maxPixelSize:(NSUInteger)maxPixelSize;
 -(NSImage *)imageWithData:(NSData *)data maxPixelSize:(NSUInteger)maxPixelSize fileName:(NSString *)fileName;
 -(NSImage *)imageWithContentsOfFile:(NSString *)path maxPixelSize:(NSUInteger)maxPixelSize;
@@ -321,6 +322,17 @@ static NSArray *_COImageLoader_imageFileTypes=nil;
 
 - (id)initWithPath:(NSString *)path displayPath:(NSString *)dispPath readSubFolder:(BOOL)boo controller:(id)ctr;
 {
+	return [self initWithPath:path displayPath:dispPath readSubFolder:boo controller:ctr imagesOnly:NO];
+}
+
+- (id)initWithImagePath:(NSString *)path readSubFolder:(BOOL)boo controller:(id)ctr
+{
+	NSString *folder = [path stringByDeletingLastPathComponent];
+	return [self initWithPath:folder displayPath:folder readSubFolder:boo controller:ctr imagesOnly:YES];
+}
+
+- (id)initWithPath:(NSString *)path displayPath:(NSString *)dispPath readSubFolder:(BOOL)boo controller:(id)ctr imagesOnly:(BOOL)imagesOnly
+{
 	
 	self = [super init];
     if (self) {
@@ -330,8 +342,13 @@ static NSArray *_COImageLoader_imageFileTypes=nil;
 		inTempDir = NO;
 		inArchiveArray = [[NSMutableArray alloc] init];
 		
-		NSMutableArray *tempArray = [NSMutableArray arrayWithArray:[COImageLoader fileTypes]];
-		[tempArray addObjectsFromArray:[COImageLoader imageFileTypes]];
+		NSMutableArray *tempArray = [NSMutableArray arrayWithArray:[COImageLoader imageFileTypes]];
+		if (imagesOnly) {
+			// AppKit advertises PDF among its image types, but it is a separate book.
+			[tempArray removeObjectsInArray:[NSArray arrayWithObjects:@"pdf", @"PDF", nil]];
+		} else {
+			[tempArray addObjectsFromArray:[COImageLoader fileTypes]];
+		}
 		
 		filterArray = [[NSArray arrayWithArray:tempArray] retain];
 		readSubFolder=boo;

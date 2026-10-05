@@ -40,6 +40,8 @@
 
 - (id)initWithPath:(NSString *)path readSubFolder:(BOOL)boo controller:(id)ctr;
 - (id)initWithPath:(NSString *)path displayPath:(NSString *)dispPath readSubFolder:(BOOL)boo controller:(id)ctr;
+// Open an image's folder without loading neighboring PDFs or archives.
+- (id)initWithImagePath:(NSString *)path readSubFolder:(BOOL)boo controller:(id)ctr;
 //- (id)initWithPath:(NSString *)path readSubFolder:(BOOL)boo;
 //- (id)initWithPath:(NSString *)path displayPath:(NSString *)dispPath readSubFolder:(BOOL)boo;
 

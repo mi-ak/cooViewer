@@ -1,5 +1,7 @@
 # coo2 — 快適に漫画を見るために
 
+[日本語](index.md) · [English](en/index.md)
+
 [紹介](index.md) · [操作マニュアル](manual.md) · [補足情報](other.md) · [開発資料](DEVELOPMENT.md)
 
 coo2 は、漫画や写真集などを読むための macOS 向け画像・コミックアーカイブビューアです。画像の入ったフォルダ、圧縮ファイル、PDF を「本」として開き、単ページや見開きで閲覧できます。

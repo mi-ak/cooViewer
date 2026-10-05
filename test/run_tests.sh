@@ -83,3 +83,26 @@ xcrun --sdk macosx clang -fblocks \
   -framework Cocoa -framework Quartz -framework ImageIO -framework UniformTypeIdentifiers -larchive \
   -o "$tmp_dir/pdf_render_test"
 "$tmp_dir/pdf_render_test" "$tmp_dir/pages.pdf" "$tmp_dir/invalid.pdf"
+
+python3 - "$root_dir" "$tmp_dir" <<'PY'
+from pathlib import Path
+import subprocess
+import sys
+
+root = Path(sys.argv[1])
+temporary = Path(sys.argv[2])
+sources = sorted(path for path in (root / 'src').rglob('*.m') if path.name != 'main.m')
+includes = sorted({path.parent for path in (root / 'src').rglob('*.h')})
+binary = temporary / 'launch_open_test'
+command = ['xcrun', '--sdk', 'macosx', 'clang', '-fblocks',
+           '-include', str(root / 'src/coo2_Prefix.pch')]
+for directory in includes:
+    command.extend(['-I', str(directory)])
+command.extend(str(path) for path in sources)
+command.extend([str(root / 'test/launch_open_test.m'),
+                '-framework', 'Cocoa', '-framework', 'Quartz',
+                '-framework', 'ImageIO', '-framework', 'UniformTypeIdentifiers',
+                '-framework', 'Carbon', '-larchive', '-o', str(binary)])
+subprocess.run(command, check=True)
+subprocess.run([str(binary)], check=True)
+PY

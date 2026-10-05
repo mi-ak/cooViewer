@@ -1,5 +1,7 @@
 # coo2 0.1.0
 
+[日本語](README.md) · [English](README.en.md)
+
 macOS 向けの画像・コミックアーカイブビューアです。**HEIC の写真を変換せずにそのまま開けます。** WebP の静止画像の表示、アニメーション GIF／WebP の再生、暗証番号付き PDF の閲覧にも対応します。
 
 **coo2 は coo 氏による [cooViewer](https://github.com/coo-ona/cooViewer) の派生版で、元の作者による公式版ではありません。** 機能の紹介は [coo2 の紹介](docs/index.md)、操作方法は [操作マニュアル](docs/manual.md) を参照してください。
@@ -26,7 +28,7 @@ xcodebuild -project coo2.xcodeproj -scheme coo2 \
 sh test/run_tests.sh
 ```
 
-このテストはアーカイブの読み込みと安全な展開、旧形式の設定とファイルエイリアスの移行、ファイル名の自然順ソート、複数ページ PDF の並行描画と暗証番号の確認を行います。
+このテストはアーカイブの読み込みと安全な展開、旧形式の設定とファイルエイリアスの移行、ファイル名の自然順ソート、複数ページ PDF の並行描画と暗証番号、起動時の指定ファイルと前回の本の選択を確認します。
 
 ## ディレクトリ
 

@@ -1,5 +1,7 @@
 # coo2 開発資料
 
+[日本語](DEVELOPMENT.md) · [English](en/DEVELOPMENT.md)
+
 [紹介](index.md) · [操作マニュアル](manual.md) · [補足情報](other.md) · [開発資料](DEVELOPMENT.md)
 
 ## 依存関係
@@ -23,7 +25,11 @@ app/controller ──> image/COImageLoader ──> image/archive/COArchiveReader
 
 ## 検証
 
-ルートの README にあるコマンドで Development ビルドを行います。`sh test/run_tests.sh` でアーカイブ処理、設定移行、ファイル名の自然順ソート、PDF の並行描画と暗証番号を検証します。テスト用の ZIP と PDF、旧形式の設定データは一時ディレクトリに生成します。
+ルートの README にあるコマンドで Development ビルドを行います。`sh test/run_tests.sh` でアーカイブ処理、設定移行、ファイル名の自然順ソート、PDF の並行描画と暗証番号、起動時の本の選択を検証します。テスト用の ZIP と PDF、旧形式の設定データは一時ディレクトリに生成します。
+
+`pdf_render_test.m` は、画像ファイルを指定したときに周辺やサブフォルダの暗証番号付き PDF を読み込まず、PDF やフォルダを直接指定したときは従来どおり認証して閲覧できることも確認します。
+
+`launch_open_test.m` は実際のアプリケーションデリゲートのコールバックを呼び、指定ファイルが起動完了の前後に届く場合、ファイル指定なしの場合、自動復元が無効の場合、指定ファイルを開けない場合を検証します。ウィンドウ表示と設定の読み込みはテスト用のオブジェクトに置き換え、ユーザーの環境設定を変更しません。
 
 `COFileBookmarks.h` は旧 Carbon AliasRecord を読み込み時に `NSURL` ブックマークへ変換します。`COArchivedSettings.h` は旧 `NSArchiver` データを読み込んで安全な keyed archive へ書き換えます。旧形式の読み込みは既存設定の移行専用です。
 

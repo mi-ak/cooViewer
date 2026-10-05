@@ -102,6 +102,7 @@
 	BOOL timerSwitch;
 	id slideshowActivity;
 	BOOL restoreFullscreenOnNextKey;
+	BOOL hasExplicitOpenRequest;
 	//BOOL loopSwitch;
 	BOOL numberSwitch;
 	BOOL fitMode;
@@ -150,6 +151,9 @@
 	
 }
 - (void)awakeFromNib;
+- (void)applicationDidFinishLaunching:(NSNotification *)notification;
+- (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender;
+- (BOOL)applicationOpenUntitledFile:(NSApplication *)sender;
 
 - (IBAction)openTheLastPage:(id)sender;
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename;

@@ -547,13 +547,20 @@ static BOOL COConfirmAction(NSString *title, NSString *message)
 	}
 	[imageView setDragScroll:array3 mode:2];
 	[imageView setDragScroll:array3 mode:3];
-	
-	if ([defaults boolForKey:@"OpenLastFolder"] == YES) {
-		if (![window isVisible]) {
-			[self openTheLastPage:self];
-		}
-	}
  }
+
+- (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender
+{
+	return !hasExplicitOpenRequest && [defaults boolForKey:@"OpenLastFolder"] && ![window isVisible];
+}
+
+- (BOOL)applicationOpenUntitledFile:(NSApplication *)sender
+{
+	// AppKit requests an untitled file when launching without a document to open.
+	if (![self applicationShouldOpenUntitledFile:sender]) return NO;
+	[self openTheLastPage:self];
+	return [window isVisible];
+}
  
 #pragma mark openFromAny
 - (IBAction)openTheLastPage:(id)sender
@@ -596,6 +603,8 @@ static BOOL COConfirmAction(NSString *title, NSString *message)
 
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename
 {
+	// Even a failed explicit request must not fall back to the previous book.
+	hasExplicitOpenRequest = YES;
 	if (timerSwitch) {
 		[timer invalidate];
 		timerSwitch=NO;
@@ -708,7 +717,9 @@ static BOOL COConfirmAction(NSString *title, NSString *message)
 		}
 	}
 	
-	COImageLoader *newImageLoader = [[COImageLoader alloc] initWithPath:currentBookPath readSubFolder:readSubFolder controller:self];
+	COImageLoader *newImageLoader = fromFileName
+		? [[COImageLoader alloc] initWithImagePath:fromFileName readSubFolder:readSubFolder controller:self]
+		: [[COImageLoader alloc] initWithPath:currentBookPath readSubFolder:readSubFolder controller:self];
 
 	//NSLog(@"controller mode=%i count=%i",[newImageLoader mode],[newImageLoader itemCount]);
 	if (!newImageLoader || ![newImageLoader checkPassword] || [newImageLoader mode] < 0 || [newImageLoader itemCount] < 1) {

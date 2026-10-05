@@ -3,6 +3,36 @@
 #import "COPDFImage.h"
 #import "COImageLoader.h"
 
+@interface PasswordTestController : NSObject
+@property (readonly) NSArray *requestedPaths;
+@end
+
+@implementation PasswordTestController
+{
+    NSMutableArray *_requestedPaths;
+}
+- (id)init
+{
+    self = [super init];
+    if (self) _requestedPaths = [[NSMutableArray alloc] init];
+    return self;
+}
+- (NSArray *)requestedPaths
+{
+    return _requestedPaths;
+}
+- (void)askForPassword:(COImageLoader *)loader
+{
+    [_requestedPaths addObject:[loader displayPath]];
+    [loader checkAndSetPassword:@"1234"];
+}
+- (void)dealloc
+{
+    [_requestedPaths release];
+    [super dealloc];
+}
+@end
+
 static void Require(BOOL condition, NSString *message)
 {
     if (!condition) {
@@ -76,6 +106,50 @@ int main(int argc, const char *argv[])
     Require(DrawsExpectedPage([protectedLoader itemAtIndex:1], YES), @"unlocked second page renders red");
     PDFDocument *stillProtected = [[[PDFDocument alloc] initWithURL:[NSURL fileURLWithPath:protectedPath]] autorelease];
     Require([stillProtected isLocked], @"source PDF remains protected on disk");
+
+    NSString *folderPath = [path stringByDeletingLastPathComponent];
+    NSString *imagePath = [folderPath stringByAppendingPathComponent:@"selected.PNG"];
+    NSBitmapImageRep *bitmap = [[[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL
+        pixelsWide:2 pixelsHigh:2 bitsPerSample:8 samplesPerPixel:4 hasAlpha:YES
+        isPlanar:NO colorSpaceName:NSDeviceRGBColorSpace bytesPerRow:0 bitsPerPixel:0] autorelease];
+    memset([bitmap bitmapData], 255, [bitmap bytesPerRow] * [bitmap pixelsHigh]);
+    Require([[bitmap representationUsingType:NSBitmapImageFileTypePNG properties:@{}]
+        writeToFile:imagePath atomically:YES], @"image fixture is created");
+    NSString *nestedPath = [folderPath stringByAppendingPathComponent:@"nested"];
+    Require([[NSFileManager defaultManager] createDirectoryAtPath:nestedPath
+        withIntermediateDirectories:NO attributes:nil error:nil], @"nested folder is created");
+    NSString *nestedImage = [nestedPath stringByAppendingPathComponent:@"page.png"];
+    Require([[NSFileManager defaultManager] copyItemAtPath:imagePath toPath:nestedImage error:nil],
+            @"nested image fixture is created");
+    Require([[NSFileManager defaultManager] copyItemAtPath:protectedPath
+        toPath:[nestedPath stringByAppendingPathComponent:@"protected.pdf"] error:nil],
+            @"nested protected PDF fixture is created");
+
+    PasswordTestController *imageController = [[[PasswordTestController alloc] init] autorelease];
+    COImageLoader *imageFolder = [[[COImageLoader alloc] initWithImagePath:imagePath
+        readSubFolder:NO controller:imageController] autorelease];
+    Require([imageController.requestedPaths count] == 0,
+            @"opening an image does not ask for a neighboring PDF's password");
+    Require([[imageFolder pathArray] isEqualToArray:@[imagePath]] && [imageFolder itemAtIndex:0],
+            @"image selection loads only images in its folder");
+    COImageLoader *nestedImages = [[[COImageLoader alloc] initWithImagePath:imagePath
+        readSubFolder:YES controller:imageController] autorelease];
+    Require([imageController.requestedPaths count] == 0 && [nestedImages itemCount] == 2 &&
+            [[nestedImages pathArray] containsObject:nestedImage],
+            @"nested image reading also skips protected PDFs");
+
+    PasswordTestController *pdfController = [[[PasswordTestController alloc] init] autorelease];
+    COImageLoader *explicitPDF = [[[COImageLoader alloc] initWithPath:protectedPath
+        readSubFolder:NO controller:pdfController] autorelease];
+    Require([pdfController.requestedPaths isEqualToArray:@[protectedPath]] &&
+            [explicitPDF checkPassword] && DrawsExpectedPage([explicitPDF itemAtIndex:0], NO),
+            @"an explicitly opened protected PDF still asks for its password and renders");
+    PasswordTestController *folderController = [[[PasswordTestController alloc] init] autorelease];
+    COImageLoader *explicitFolder = [[[COImageLoader alloc] initWithPath:folderPath
+        readSubFolder:NO controller:folderController] autorelease];
+    Require([folderController.requestedPaths isEqualToArray:@[protectedPath]] &&
+            [[explicitFolder pathArray] containsObject:[protectedPath stringByAppendingPathComponent:@"1.pdf"]],
+            @"opening a folder still includes its PDFs");
 
     [protectedLoader release];
     [invalid release];

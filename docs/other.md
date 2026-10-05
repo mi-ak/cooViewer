@@ -1,5 +1,7 @@
 # coo2 補足情報
 
+[日本語](other.md) · [English](en/other.md)
+
 [紹介](index.md) · [操作マニュアル](manual.md) · [補足情報](other.md) · [開発資料](DEVELOPMENT.md)
 
 ## cooViewer との関係
